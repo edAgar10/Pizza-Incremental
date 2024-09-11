@@ -5,9 +5,27 @@
 		<title>Three JS Test</title>
 		<style>
 			body { margin: 0; }
+			#container { display: flex}
+			#resourceSection {width: 30%}
+			#generatorSection {width: 30%}
+			#worldSection {width: 40%; overflow: hidden;}
 		</style>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		
 	</head>
 	<body>
-		<script type="module" src="/main.js"></script>
-	</body>
+		<div id = 'container'>
+			<div id = 'resourceSection'>
+				
+			</div>
+			<div id = 'generatorSection'>
+			
+			</div>
+			<div id = 'worldSection'>
+				<canvas></canvas>
+			</div> 
+		</div>
+			<script type="module" src="/main.js"></script>
+		</body>
 </html>
