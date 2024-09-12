@@ -6,16 +6,13 @@ import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
+// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-const renderer = new THREE.WebGLRenderer({antialias:true});
-renderer.setSize( window.innerWidth, window.innerHeight );
-renderer.setPixelRatio(window.devicePixelRatio);
-document.body.appendChild( renderer.domElement );
+const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas')});
 
-const geometry = new THREE.SphereGeometry( 5, 50, 50 );
-const material = new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/worldmap.jpg')}}});
-const sphere = new THREE.Mesh( geometry, material );
+const sphere = new THREE.Mesh( new THREE.SphereGeometry( 5, 50, 50 ), 
+new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/worldmap.jpg')}}}) );
 
 
 const atmGeometry = new THREE.SphereGeometry( 5, 50, 50 );
@@ -50,15 +47,21 @@ scene.add(group)
 camera.position.z = 20;
 camera.position.z.clamp
 
-// const mouse = {
-	// x: undefined,
-	// y: undefined
-// }
-
 var mouseDown = false,
 	mouseX = 0,
 	mouseY = 0;
 	
+function resizeCanvas() {
+	const canvas = renderer.domElement;
+	const width = canvas.clientWidth;
+	const height = canvas.clientHeight;
+	if (canvas.width !== width || canvas.height !== height) {
+		renderer.setSize(width, height, false);
+		camera.aspect = width/height;
+		camera.updateProjectionMatrix();
+	}
+	
+}
 
 	
 function onMouseMove(evt) {
@@ -112,12 +115,17 @@ function clamp(num, min, max){
 	return Math.min(Math.max(num, min), max);
 }
 
-function animate() {
+function animate(time) {
+	time *= 0.001;
+	
+	resizeCanvas();
+	
 	sphere.rotation.y += 0.001;
 	renderer.render( scene, camera );
+	requestAnimationFrame(animate)
 	
 }
-renderer.setAnimationLoop( animate )
+requestAnimationFrame(animate);
 
 addEventListener('mousemove', function (e) {onMouseMove(e);}, false);
 addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
