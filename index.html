@@ -3,23 +3,34 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Three JS Test</title>
-		<link rel="stylesheet" type="text/css" href="style.css">
+		<link rel='stylesheet' type='text/css' href='style.css'>
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<script type='module' src='/main.js'></script>
+		
+		
 		
 	</head>
 	<body>
 		<div class = 'container'>
 			<div id = 'resourceSection'>
 				<h1>Resources</h1>
+				<h2 id="money"></h2>
 			</div>
 			<div id = 'generatorSection'>
 				<h1>Buildings</h1>
+				<div class="generator">
+					<button id="button1">Buy</button>
+					<p1 id = "gen1"><p1>
+				</div>
+				
 			</div>
 			<div id = 'worldSection'>
 				<canvas></canvas>
 			</div> 
 		</div>
-			<script type="module" src="/main.js"></script>
+		
+		
+		<script type='module' src='/game.js'></script>
 		</body>
 </html>
