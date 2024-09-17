@@ -2,6 +2,9 @@ import * as THREE from 'three';
 import vertexShader from './Shaders/vertex.glsl?raw'
 import fragmentShader from './Shaders/fragment.glsl?raw'
 
+import borderVrtxShader from './Shaders/borderVertex.glsl?raw'
+import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
+
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
@@ -10,10 +13,16 @@ const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
 // const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas')});
+renderer.setPixelRatio(window.devicePixelRatio)
 
-const sphere = new THREE.Mesh( new THREE.SphereGeometry( 5, 50, 50 ), 
-new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/worldmap.jpg')}}}) );
+const sphereMaterial = new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/wip.png')}}})
+const sphere = new THREE.Mesh( new THREE.SphereGeometry( 5, 50, 50 ), sphereMaterial);
 
+const sphereBorder = new THREE.Mesh( new THREE.SphereGeometry( 5, 50, 50 ), 
+new THREE.ShaderMaterial({vertexShader: borderVrtxShader, fragmentShader: borderFrgmShader, blending: THREE.AdditiveBlending, side: THREE.BackSide}));
+
+sphereBorder.scale.set(1.01, 1.01, 1.01)
+scene.add(sphereBorder)
 
 const atmGeometry = new THREE.SphereGeometry( 5, 50, 50 );
 const atmMaterial = new THREE.ShaderMaterial({vertexShader: atmVertexShader, fragmentShader: atmFragmentShader, blending: THREE.AdditiveBlending, side: THREE.BackSide});
@@ -24,6 +33,7 @@ scene.add(atmosphere)
 
 const group = new THREE.Group()
 group.add(sphere)
+
 
 
 const starGeometry = new THREE.BufferGeometry()
@@ -83,8 +93,6 @@ function onMouseDown(evt) {
 	mouseDown = true;
 	mouseX = evt.clientX;
 	mouseY = evt.clientY;
-	console.log(mouseX);
-	console.log(mouseY);
 	
 }
 
@@ -131,3 +139,28 @@ addEventListener('mousemove', function (e) {onMouseMove(e);}, false);
 addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
 addEventListener('mouseup', function (e) {onMouseUp(e);}, false);
 addEventListener('wheel', function (e) {updateCamera(e);}, false);
+
+const tabs = document.getElementsByClassName("tabButton")
+const pages = document.getElementsByClassName("tabPage")
+let genTitles = document.getElementById("generatorTitle")
+const titles = ["Farm", "Buildings", "Orders"]
+console.log(tabs)
+console.log(pages)
+
+for (let i = 0; i < tabs.length; i++){
+	tabs[i].addEventListener("click",  () => changeTab(tabs[i]));
+}
+
+function changeTab(tabName) {
+	for (let i = 0; i < tabs.length; i++) {
+		if (tabName == tabs[i]) {
+			pages[i].style.display = "inline-flex";
+			genTitles.innerHTML = titles[i];
+			tabs[i].id = "tabActive" 
+		}
+		else {
+			pages[i].style.display = "none";
+			tabs[i].id = "tabUnactive" 
+		}
+	}
+}
