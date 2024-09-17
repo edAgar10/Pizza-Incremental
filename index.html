@@ -4,7 +4,9 @@
 		<meta charset="utf-8">
 		<title>Three JS Test</title>
 		<link rel='stylesheet' type='text/css' href='style.css'>
-		
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=SUSE:wght@100..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 		<script type='module' src='/main.js'></script>
 		
@@ -13,21 +15,40 @@
 	</head>
 	<body>
 		<div class = 'container'>
-			<div id = 'resourceSection'>
+			<section id = 'resourceSection'>
 				<h1>Resources</h1>
 				<h2 id="money"></h2>
-			</div>
-			<div id = 'generatorSection'>
-				<h1>Buildings</h1>
-				<div class="generator">
-					<button id="button1">Buy</button>
-					<p1 id = "gen1"><p1>
-				</div>
+			</section>
+			<section id = 'generatorSection'>
+				<h1 id="generatorTitle">Buildings</h1>
 				
-			</div>
-			<div id = 'worldSection'>
+				<div class="tabBar">
+					<button class="tabButton" id="tabUnactive">Farm</button>
+					<button class="tabButton" id="tabActive">Buildings</button>
+					<button class="tabButton" id="tabUnactive">Orders</button>
+				</div>
+
+				<div id="farmPage" class="tabPage" style="display: none;">
+
+				</div>
+				<div id="buildingPage" class="tabPage">
+					<div class="generator">
+						<button id="button1">Buy</button>
+						<p1 id = "gen1"><p1>
+					</div>
+					<div class="generator" class="tabPage">
+						<button id="button2">Buy</button>
+						<p1 id = "gen2"><p1>
+					</div>
+				</div>
+				<div id="ordersPage" class="tabPage" style="display: none;">
+
+				</div>
+
+			</section>
+			<section id = 'worldSection'>
 				<canvas></canvas>
-			</div> 
+			</section> 
 		</div>
 		
 		
