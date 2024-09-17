@@ -11,10 +11,20 @@ let generator = {
 	mult: 1
 }
 
+let generator2 = {
+	cost: Math.pow(Math.pow(50,1), 1),
+	bought: 0,
+	amount: 0, 
+	mult: 1
+}
+
 generators.push(generator)
+generators.push(generator2)
 
 const button1 = document.getElementById("button1")
 button1.addEventListener("click",  () => buyGenerator(1));
+const button2 = document.getElementById("button2")
+button2.addEventListener("click",  () => buyGenerator(2));
 
 function format(amount) {
 	let power = Math.floor(Math.log10(amount))
@@ -27,7 +37,8 @@ function format(amount) {
 
 function updateUI() {
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
-	gen1.innerHTML = "Amount: " + generator.amount + "<br>Cost: " + format(generator.cost);
+	gen1.innerHTML = "<br>Amount: " + generator.amount + "<br>Cost: " + format(generator.cost);
+	gen2.innerHTML = "<br>Amount: " + generator2.amount + "<br>Cost: " + format(generator2.cost);
 }
 
 function productionLoop(diff){
