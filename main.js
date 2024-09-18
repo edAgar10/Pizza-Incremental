@@ -10,7 +10,7 @@ import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
 const scene = new THREE.Scene();
 const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
-// const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
 
 const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas')});
 renderer.setPixelRatio(window.devicePixelRatio)
@@ -140,27 +140,30 @@ addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
 addEventListener('mouseup', function (e) {onMouseUp(e);}, false);
 addEventListener('wheel', function (e) {updateCamera(e);}, false);
 
-const tabs = document.getElementsByClassName("tabButton")
+const tabList = [document.getElementById("tab1"), document.getElementById("tab2"), document.getElementById("tab3")]
 const pages = document.getElementsByClassName("tabPage")
 let genTitles = document.getElementById("generatorTitle")
 const titles = ["Farm", "Buildings", "Orders"]
-console.log(tabs)
-console.log(pages)
 
-for (let i = 0; i < tabs.length; i++){
-	tabs[i].addEventListener("click",  () => changeTab(tabs[i]));
+
+for (let i = 0; i < tabList.length; i++){
+	tabList[i].addEventListener("click",  () => changeTab(tabList[i]));
 }
 
+
 function changeTab(tabName) {
-	for (let i = 0; i < tabs.length; i++) {
-		if (tabName == tabs[i]) {
-			pages[i].style.display = "inline-flex";
-			genTitles.innerHTML = titles[i];
-			tabs[i].id = "tabActive" 
-		}
-		else {
-			pages[i].style.display = "none";
-			tabs[i].id = "tabUnactive" 
-		}
+	for (let i = 0; i < tabList.length; i++) {
+		if (tabName == tabList[i]) {
+ 			pages[i].style.display = "inline-flex";
+ 			genTitles.innerHTML = titles[i];
+			tabList[i].classList.remove("tabButton");
+ 			tabList[i].classList.add("tabButtonActive");
+ 		}
+ 		else {
+ 			pages[i].style.display = "none";
+			tabList[i].classList.remove("tabButtonActive");
+ 			tabList[i].classList.add("tabButton");
+ 		}
 	}
+
 }
