@@ -8,6 +8,18 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
+//Ready document
+
+$(document).ready(function() {
+	$("#buildingPage").hide();
+	$("#ordersPage").hide();
+});
+
+
+
+
+// Rendering the planet section
+
 const scene = new THREE.Scene();
 const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
 
@@ -140,6 +152,8 @@ addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
 addEventListener('mouseup', function (e) {onMouseUp(e);}, false);
 addEventListener('wheel', function (e) {updateCamera(e);}, false);
 
+// Building page 
+
 const tabList = [document.getElementById("tab1"), document.getElementById("tab2"), document.getElementById("tab3")]
 const pages = document.getElementsByClassName("tabPage")
 let genTitles = document.getElementById("generatorTitle")
@@ -147,6 +161,7 @@ const titles = ["Farm", "Buildings", "Orders"]
 
 
 for (let i = 0; i < tabList.length; i++){
+	
 	tabList[i].addEventListener("click",  () => changeTab(tabList[i]));
 }
 
@@ -154,16 +169,32 @@ for (let i = 0; i < tabList.length; i++){
 function changeTab(tabName) {
 	for (let i = 0; i < tabList.length; i++) {
 		if (tabName == tabList[i]) {
- 			pages[i].style.display = "inline-flex";
+			$(pages[i]).slideToggle();
  			genTitles.innerHTML = titles[i];
 			tabList[i].classList.remove("tabButton");
  			tabList[i].classList.add("tabButtonActive");
  		}
  		else {
- 			pages[i].style.display = "none";
+ 			$(pages[i]).hide();
 			tabList[i].classList.remove("tabButtonActive");
  			tabList[i].classList.add("tabButton");
  		}
 	}
 
 }
+
+
+//Resource Page
+
+const resourceLists = [document.getElementById("mainIngList"), document.getElementById("sideIngList"), document.getElementById("farmIngList")]
+
+$(".dropdownButton").on("click", function() {
+	var currentButtonId = $(this).attr("id");
+
+	for (let i = 0; i < resourceLists.length; i++){
+		console.log()
+		if ((currentButtonId.split("Button").join("")) == ((resourceLists[i].id).split("List").join(""))){
+			$(resourceLists[i]).slideToggle(1000);
+		}
+	}
+});
