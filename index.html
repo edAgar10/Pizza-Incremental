@@ -39,8 +39,8 @@
 						<button class="dropdownButton" id="farmIngButton">Farm Ingredients</button>
 						<ul class="resourceList" id="farmIngList">
 							<li id="wheat"></li>
-							<li id="tomatos"></li>
 							<li id="milk"></li>
+							<li id="tomatos"></li>
 						</ul>
 					</div>
 
@@ -52,25 +52,54 @@
 				<h1 id="generatorTitle">Buildings</h1>
 				
 				<div class="tabBar">
-					<button class="tabButton" id="tab1">Farm</button>
-					<button class="tabButtonActive" id="tab2">Buildings</button>
+					<button class="tabButtonActive" id="tab1">Farm</button>
+					<button class="tabButton" id="tab2">Buildings</button>
 					<button class="tabButton" id="tab3">Orders</button>
 				</div>
 
-				<div id="farmPage" class="tabPage" style="display: none;">
-					
+				<div id="farmPage" class="tabPage">
+
+					<div id="plantSelectionContainer">
+						<h2>Plants</h2>
+						<p1 id="availablePlants"></p1>
+
+						<div class="valueIncrease" id="tomatoPlants">
+							<button class="valueChangeBtn" id="decreaseBtn">&lt;</button>
+							<p1>Tomatos: </p1>
+							<button class="valueChangeBtn" id="increaseBtn">&gt;</button>
+						</div>
+
+					</div>
+
+					<div id="generatorContainer">
+
+						<div class="generator">
+							<p1 id="gen1Title"></p1>
+							<button class="dropdownButton" id="button1">Buy</button>
+							<p1 id = "gen1"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen2Title"></p1>
+							<button class="dropdownButton" id="button2">Buy</button>
+							<p1 id = "gen2"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen3Title"></p1>
+							<button class="dropdownButton" id="button3">Buy</button>
+							<p1 id = "gen3"><p1>
+						</div>
+
+					</div>
+
 				</div>
 				<div id="buildingPage" class="tabPage">
-					<div class="generator">
+					<!-- <div class="generator">
 						<button id="button1">Buy</button>
 						<p1 id = "gen1"><p1>
-					</div>
-					<div class="generator" class="tabPage">
-						<button id="button2">Buy</button>
-						<p1 id = "gen2"><p1>
-					</div>
+					</div> -->
+					
 				</div>
-				<div id="ordersPage" class="tabPage" style="display: none;">
+				<div id="ordersPage" class="tabPage">
 
 				</div>
 
