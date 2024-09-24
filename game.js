@@ -26,16 +26,20 @@ var tomatos = {
 }
 ingredients.push(tomatos)
 
+var flour = {
+	name: "flour",
+	total: 300
+}
 
 var generators = []
 var buildings = []
 var lastUpdate = Date.now()
 
 let wheatField = {
-	cost: Math.pow(Math.pow(50,1), 1),
+	cost: Math.pow(Math.pow(25,1), 1),
 	name: "Wheat Field",
 	amount: 1, 
-	mult: 1
+	mult: 2
 }
 
 generators.push(wheatField)
@@ -64,6 +68,21 @@ let vegPatch = {
 	mult: 1
 }
 
+buildings.push(vegPatch)
+document.getElementById("gen3Title").innerHTML = vegPatch.name  + "<br>";
+
+let wheatMill = {
+	cost: Math.pow(Math.pow(50,1), 1),
+	name: "Mill",
+	amount: 0,
+	increase: 3,
+	decrease: 5,
+	mult: 1
+}
+
+buildings.push(wheatMill)
+document.getElementById("bui1Title").innerHTML = wheatMill.name  + "<br>";
+
 
 let plantValues = {
 	tomatos: 0
@@ -71,8 +90,7 @@ let plantValues = {
 
 
 
-buildings.push(vegPatch)
-document.getElementById("gen3Title").innerHTML = vegPatch.name  + "<br>";
+
 
 const button1 = document.getElementById("button1")
 button1.addEventListener("click",  () => buyGenerator(1));
@@ -80,6 +98,8 @@ const button2 = document.getElementById("button2")
 button2.addEventListener("click",  () => buyGenerator(2));
 const button3 = document.getElementById("button3")
 button3.addEventListener("click",  () => buyBuilding(1));
+const button4 = document.getElementById("button4")
+button4.addEventListener("click",  () => buyBuilding2(2));
 
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
@@ -129,6 +149,9 @@ function updateAvailable(values, max) {
 
 function updateUI() {
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
+
+	document.getElementById("flourIng").textContent = "Flour: " + format(flour.total) + "g";
+
 	document.getElementById("wheatIng").textContent = "Wheat: " + format(wheat.total);
 	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2);
 	document.getElementById("tomatosIng").textContent = "Tomatos: " + (tomatos.total).toFixed(0);
@@ -140,16 +163,28 @@ function updateUI() {
 	gen1.innerHTML = "<br>Amount: " + wheatField.amount + "<br>Cost: " + format(wheatField.cost);
 	gen2.innerHTML = "<br>Amount: " + cowsGen.amount + "<br>Cost: " + format(cowsGen.cost);
 	gen3.innerHTML = "<br>Amount: " + vegPatch.amount + "<br>Cost: " + format(vegPatch.cost);
+	bui1.innerHTML = "<br>Amount: " + wheatMill.amount + "<br>Cost: " + format(wheatMill.cost);
 }
 
 console.log(plantValues.tomatos)
 
-
+var wheatCheck = false
 function productionLoop(diff){
-	wheat.total += wheatField.amount * wheatField.mult * diff
+	wheat.total += (wheatField.amount * wheatField.mult * diff)
+	if (wheat.total > (wheatMill.amount * wheatMill.decrease)){
+		wheat.total -= (wheatMill.amount * wheatMill.decrease)
+		wheatCheck = true
+	}
+	
 	milk.total += cowsGen.amount * cowsGen.mult * diff
 	milk.total = clamp(milk.total, 0, milk.cap)
 	tomatos.total += plantValues.tomatos * vegPatch.mult * diff;
+	
+	if (wheatCheck == true){
+		flour.total += wheatMill.amount * wheatMill.mult * diff;
+		wheatCheck = false
+	}
+	
 
 
 	
@@ -175,6 +210,15 @@ function buyBuilding(i) {
 	maxPlants += b.increase
 	b.cost *= 1.5
 	console.log(maxPlants)
+}
+
+function buyBuilding2(i) {
+	console.log("building bought")
+	let b = buildings[i-1]
+	if (b.cost > totalmoney) return
+	totalmoney -= b.cost
+	b.amount += 1
+	b.cost *= 1.5
 }
 
 

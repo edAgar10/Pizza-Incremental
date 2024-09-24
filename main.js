@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import vertexShader from './Shaders/vertex.glsl?raw'
 import fragmentShader from './Shaders/fragment.glsl?raw'
 
@@ -8,6 +9,7 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
+
 //Ready document
 
 $(document).ready(function() {
@@ -15,31 +17,51 @@ $(document).ready(function() {
 	$("#ordersPage").hide();
 });
 
-
-
+const textureLoader = new THREE.TextureLoader();
 
 // Rendering the planet section
-
-const scene = new THREE.Scene();
-const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
-
 
 const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas'), alpha: true});
 renderer.setPixelRatio(window.devicePixelRatio)
 
+const scene = new THREE.Scene();
+const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
+const controls = new OrbitControls(camera, renderer.domElement)
+
+
+
 const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
 
-// const sphereMaterial = new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/earthuv.png')}}})
-const sphereMaterial = new THREE.MeshStandardMaterial({ 
-	color: new THREE.Color( 0xffffff ),
-	map: new THREE.TextureLoader().load('./Assets/earthuv.png')
+
+// const uniforms = {
+// 	sunDirection: {value: new THREE.Vector3(0,1,0)},
+// 	dayTexture: {value: textureLoader.load('./Assets/earthuv.png')},
+// 	nightTexture: {value: textureLoader.load('./Assets/earthuvnight.png')}
+// }
+
+
+// /const sphereMaterial = new THREE.ShaderMaterial({
+// 	vertexShader, 
+// 	fragmentShader, 
+// 	uniforms: {globeTexture: {value: textureLoader.load('./Assets/earthuv.png')}}
+// });
+// const sphereMaterial = new THREE.ShaderMaterial({ 
+// 	uniforms: uniforms,
+// 	vertexShader: vertexShader,
+// 	fragmentShader: fragmentShader
+// });
+
+const sphereMaterial = new THREE.MeshStandardMaterial({
+	color: new THREE.Color(0xffffff),
+	map: textureLoader.load('./Assets/earthuv.png')
 });
 const sphere = new THREE.Mesh( globeGeometry, sphereMaterial);
 
-const darksideMat = new THREE.MeshBasicMaterial({ 
-	map: new THREE.TextureLoader().load('./Assets/earthuvnight.png'),
-	blending: THREE.SubtractiveBlending
-	}); 
+ const darksideMat = new THREE.MeshBasicMaterial({ 
+ 	map: textureLoader.load('./Assets/earthuvnight.png'),
+ 	blending: THREE.AdditiveBlending,
+
+}); 
 
 const darksideMesh = new THREE.Mesh(globeGeometry, darksideMat);
 
@@ -57,6 +79,7 @@ atmosphere.scale.set(1.1, 1.1, 1.1)
 scene.add(atmosphere)
 
 const group = new THREE.Group()
+
 group.add(sphere)
 group.add(darksideMesh)
 
@@ -76,12 +99,20 @@ starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerti
 
 const stars = new THREE.Points(starGeometry, starMaterial)
 
-group.add(stars)
+scene.add(stars)
+
+const sunMat = new THREE.MeshStandardMaterial({
+	color: new THREE.Color(0xffffff)
+});
+
+const sunMesh = new THREE.Mesh(globeGeometry, sunMat)
+
+
+const sunlight = new THREE.DirectionalLight(0xffffff, 5);
+group.add(sunMesh)
+group.add(sunlight);
 
 scene.add(group)
-
-const sunlight = new THREE.DirectionalLight(0xffffff, 3);
-group.add(sunlight);
 
 const sunCurve = new THREE.EllipseCurve(
 	0, 0,
@@ -92,10 +123,8 @@ const point = sunCurve.getSpacedPoints(200)
 
 camera.position.z = 20;
 camera.position.z.clamp
+controls.update();
 
-var mouseDown = false,
-	mouseX = 0,
-	mouseY = 0;
 	
 function resizeCanvas() {
 	const canvas = renderer.domElement;
@@ -109,51 +138,6 @@ function resizeCanvas() {
 	
 }
 
-	
-function onMouseMove(evt) {
-	if(!mouseDown) {
-		return
-	}
-	
-	evt.preventDefault();
-	
-	var deltaX = evt.clientX - mouseX;
-	var deltaY = evt.clientY - mouseY;
-	mouseX = evt.clientX;
-	mouseY = evt.clientY;
-	rotateScene(deltaX, deltaY);
-}
-
-function onMouseDown(evt) {
-	evt.preventDefault();
-	mouseDown = true;
-	mouseX = evt.clientX;
-	mouseY = evt.clientY;
-	
-}
-
-function onMouseUp(evt) {
-	evt.preventDefault();
-	mouseDown = false;
-	
-}
-
-
-function rotateScene(deltaX, deltaY) {
-    group.rotation.y += deltaX / 100;
-    group.rotation.x += deltaY / 100;
-}
-
-function updateCamera(evt) {
-	camera.position.z = clamp((camera.position.z - evt.deltaY / 100.0), 10, 25)
-	if (camera.position.z < 20) {
-		atmosphere.scale.set(1.2, 1.2, 1.2)
-	}
-	else {
-		atmosphere.scale.set(1.1, 1.1, 1.1)
-	}
-		
-}
 
 function clamp(num, min, max){
 	return Math.min(Math.max(num, min), max);
@@ -162,6 +146,9 @@ function clamp(num, min, max){
 const loopTime = 1;
 const sunOrbitSpeed = 0.00001;
 
+// var dir = new THREE.Vector3();
+// var sunPosition = sunlight.position;
+// const origin = new THREE.Vector3(0,0,0);
 
 function animate() {
 	const time = sunOrbitSpeed * performance.now();
@@ -170,19 +157,26 @@ function animate() {
 	let p = sunCurve.getPoint(t);
 	sunlight.position.x = p.x;
 	sunlight.position.z = p.y;
+
+	sunMesh.position.x = p.x;
+	sunMesh.position.z = p.y;
 	
+	// sunPosition = new THREE.Vector3(p.x, p.y, p.y)
+	
+
+	// console.log(p)
+	// dir.subVectors( sunPosition, origin ).normalize();
+	// uniforms.sunDirection.value.x = dir.x;
+	// uniforms.sunDirection.value.y = dir.z;
+
 	resizeCanvas();
-	
+	controls.update();
 	renderer.render( scene, camera );
 	requestAnimationFrame(animate)
 	
 }
 requestAnimationFrame(animate);
 
-addEventListener('mousemove', function (e) {onMouseMove(e);}, false);
-addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
-addEventListener('mouseup', function (e) {onMouseUp(e);}, false);
-addEventListener('wheel', function (e) {updateCamera(e);}, false);
 
 // Building page 
 
