@@ -56,14 +56,17 @@ let cowsGen = {
 generators.push(cowsGen)
 document.getElementById("gen2Title").innerHTML = cowsGen.name  + "<br>";
 
-var maxPlants = 0;
+let selectValues = {
+	maxPlants: 0
+}
+
 var unnassignedPlants = 0;
 
 let vegPatch = {
 	cost: Math.pow(Math.pow(50,1), 1),
 	name: "Vegetable Patch",
 	amount: 0,
-	value: maxPlants, 
+	value: ("maxPlants"), 
 	increase: 1,
 	mult: 1
 }
@@ -75,8 +78,8 @@ let wheatMill = {
 	cost: Math.pow(Math.pow(50,1), 1),
 	name: "Mill",
 	amount: 0,
-	increase: 3,
-	decrease: 5,
+	increase: 2,
+	decrease: 1,
 	mult: 1
 }
 
@@ -156,8 +159,8 @@ function updateUI() {
 	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2);
 	document.getElementById("tomatosIng").textContent = "Tomatos: " + (tomatos.total).toFixed(0);
 
-	unnassignedPlants = updateAvailable(plantValues, maxPlants)
-	document.getElementById("availablePlants").textContent = "Available: " + unnassignedPlants + " / " + maxPlants
+	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
+	document.getElementById("availablePlants").textContent = "Available: " + unnassignedPlants + " / " + selectValues.maxPlants
 	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
 
 	gen1.innerHTML = "<br>Amount: " + wheatField.amount + "<br>Cost: " + format(wheatField.cost);
@@ -170,7 +173,7 @@ console.log(plantValues.tomatos)
 
 var wheatCheck = false
 function productionLoop(diff){
-	wheat.total += (wheatField.amount * wheatField.mult * diff)
+	wheat.total += wheatField.amount * wheatField.mult * diff * 2
 	if (wheat.total > (wheatMill.amount * wheatMill.decrease)){
 		wheat.total -= (wheatMill.amount * wheatMill.decrease)
 		wheatCheck = true
@@ -207,9 +210,9 @@ function buyBuilding(i) {
 	if (b.cost > totalmoney) return
 	totalmoney -= b.cost
 	b.amount += 1
-	maxPlants += b.increase
+	selectValues[b.value] += b.increase
 	b.cost *= 1.5
-	console.log(maxPlants)
+	console.log(selectValues.maxPlants)
 }
 
 function buyBuilding2(i) {
