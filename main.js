@@ -25,10 +25,15 @@ const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.query
 renderer.setPixelRatio(window.devicePixelRatio)
 
 const scene = new THREE.Scene();
-const  camera = new THREE.PerspectiveCamera(70, 2, 1, 1000);
+const  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
 const controls = new OrbitControls(camera, renderer.domElement)
+controls.autoRotate = false
+controls.enablePan = false
+controls.maxDistance = 50
 
 
+
+const group = new THREE.Group()
 
 const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
 
@@ -52,14 +57,13 @@ const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
 // });
 
 const sphereMaterial = new THREE.MeshStandardMaterial({
-	color: new THREE.Color(0xffffff),
 	map: textureLoader.load('./Assets/earthuv.png')
 });
 const sphere = new THREE.Mesh( globeGeometry, sphereMaterial);
 
  const darksideMat = new THREE.MeshBasicMaterial({ 
  	map: textureLoader.load('./Assets/earthuvnight.png'),
- 	blending: THREE.AdditiveBlending,
+ 	blending: THREE.AdditiveBlending
 
 }); 
 
@@ -69,20 +73,23 @@ const sphereBorder = new THREE.Mesh(globeGeometry,
 new THREE.ShaderMaterial({vertexShader: borderVrtxShader, fragmentShader: borderFrgmShader, blending: THREE.AdditiveBlending, side: THREE.BackSide}));
 
 sphereBorder.scale.set(1.01, 1.01, 1.01);
-scene.add(sphereBorder);
+group.add(sphereBorder);
 
 const atmGeometry = globeGeometry;
 const atmMaterial = new THREE.ShaderMaterial({vertexShader: atmVertexShader, fragmentShader: atmFragmentShader, blending: THREE.AdditiveBlending, side: THREE.BackSide});
 const atmosphere = new THREE.Mesh( atmGeometry, atmMaterial );
 
-atmosphere.scale.set(1.1, 1.1, 1.1)
-scene.add(atmosphere)
 
-const group = new THREE.Group()
+
+atmosphere.scale.set(1.1, 1.1, 1.1)
+group.add(atmosphere)
+
+
 
 group.add(sphere)
 group.add(darksideMesh)
 
+scene.add(group)
 
 
 const starGeometry = new THREE.BufferGeometry()
@@ -102,17 +109,23 @@ const stars = new THREE.Points(starGeometry, starMaterial)
 scene.add(stars)
 
 const sunMat = new THREE.MeshStandardMaterial({
-	color: new THREE.Color(0xffffff)
+	emissive: new THREE.Color(0xffffff)
+
 });
 
+const sunGroup = new THREE.Group()
+
 const sunMesh = new THREE.Mesh(globeGeometry, sunMat)
+const sunlight = new THREE.PointLight(0xffffff, 1000000);
+	
+const sunAtmosphere = new THREE.Mesh( atmGeometry, atmMaterial );
+sunAtmosphere.scale.set(2, 2, 2);
 
+sunGroup.add(sunMesh);
+sunGroup.add(sunlight);
+sunGroup.add(sunAtmosphere);
 
-const sunlight = new THREE.DirectionalLight(0xffffff, 5);
-group.add(sunMesh)
-group.add(sunlight);
-
-scene.add(group)
+scene.add(sunGroup);
 
 const sunCurve = new THREE.EllipseCurve(
 	0, 0,
@@ -149,18 +162,21 @@ const sunOrbitSpeed = 0.00001;
 // var dir = new THREE.Vector3();
 // var sunPosition = sunlight.position;
 // const origin = new THREE.Vector3(0,0,0);
+controls.target = group.position
 
 function animate() {
 	const time = sunOrbitSpeed * performance.now();
 	const t = (time % loopTime) / loopTime;
 
 	let p = sunCurve.getPoint(t);
-	sunlight.position.x = p.x;
-	sunlight.position.z = p.y;
+	group.position.x = p.x;
+	group.position.z = p.y;
 
-	sunMesh.position.x = p.x;
-	sunMesh.position.z = p.y;
+	group.rotation.y +=0.001;
 	
+	
+	
+	controls.update();
 	// sunPosition = new THREE.Vector3(p.x, p.y, p.y)
 	
 
@@ -170,9 +186,9 @@ function animate() {
 	// uniforms.sunDirection.value.y = dir.z;
 
 	resizeCanvas();
-	controls.update();
+	
 	renderer.render( scene, camera );
-	requestAnimationFrame(animate)
+	requestAnimationFrame(animate);
 	
 }
 requestAnimationFrame(animate);
