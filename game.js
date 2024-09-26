@@ -16,8 +16,8 @@ let wheat = {
 ingredients.push(wheat)
 var milk = {
 	name: "milk",
-	total: 1000,
-	cap: 2000
+	total: 500,
+	cap: 500
 }
 ingredients.push(milk)
 var tomatos = {
@@ -29,6 +29,11 @@ ingredients.push(tomatos)
 var flour = {
 	name: "flour",
 	total: 300
+}
+var water = {
+	name: "water",
+	total: 0,
+	cap: 4000
 }
 
 var generators = []
@@ -91,9 +96,14 @@ let plantValues = {
 	tomatos: 0
 }
 
-
-
-
+let waterPump = {
+	cost: Math.pow(Math.pow(50,1), 1),
+	name: "Water Pump",
+	amount: 1, 
+	mult: 10
+}
+generators.push(waterPump)
+document.getElementById("bui2Title").innerHTML = waterPump.name  + "<br>";
 
 const button1 = document.getElementById("button1")
 button1.addEventListener("click",  () => buyGenerator(1));
@@ -103,6 +113,8 @@ const button3 = document.getElementById("button3")
 button3.addEventListener("click",  () => buyBuilding(1));
 const button4 = document.getElementById("button4")
 button4.addEventListener("click",  () => buyBuilding2(2));
+const button5 = document.getElementById("button5")
+button5.addEventListener("click",  () => buyGenerator(3));
 
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
@@ -154,9 +166,10 @@ function updateUI() {
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
 
 	document.getElementById("flourIng").textContent = "Flour: " + format(flour.total) + "g";
+	document.getElementById("waterIng").textContent = "Water: " + (water.total).toFixed(2) + " / " + (water.cap).toFixed(2) + "l";
 
 	document.getElementById("wheatIng").textContent = "Wheat: " + format(wheat.total);
-	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2);
+	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2) + "l";
 	document.getElementById("tomatosIng").textContent = "Tomatos: " + (tomatos.total).toFixed(0);
 
 	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
@@ -167,17 +180,23 @@ function updateUI() {
 	gen2.innerHTML = "<br>Amount: " + cowsGen.amount + "<br>Cost: " + format(cowsGen.cost);
 	gen3.innerHTML = "<br>Amount: " + vegPatch.amount + "<br>Cost: " + format(vegPatch.cost);
 	bui1.innerHTML = "<br>Amount: " + wheatMill.amount + "<br>Cost: " + format(wheatMill.cost);
+	bui2.innerHTML = "<br>Amount: " + waterPump.amount + "<br>Cost: " + format(waterPump.cost);
 }
 
 console.log(plantValues.tomatos)
 
 var wheatCheck = false
+
 function productionLoop(diff){
 	wheat.total += wheatField.amount * wheatField.mult * diff * 2
 	if (wheat.total > (wheatMill.amount * wheatMill.decrease)){
 		wheat.total -= (wheatMill.amount * wheatMill.decrease)
 		wheatCheck = true
 	}
+
+	water.total += waterPump.amount * waterPump.mult * diff
+	water.total = clamp(water.total, 0, water.cap)
+
 	
 	milk.total += cowsGen.amount * cowsGen.mult * diff
 	milk.total = clamp(milk.total, 0, milk.cap)
