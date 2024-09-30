@@ -7,24 +7,23 @@ const gen3 = document.getElementById("gen3")
 
 var totalmoney = 20000000
 
-var ingredients = []
 
 let wheat = {
 	name: "wheat",
 	total: 500
 }
-ingredients.push(wheat)
+
 var milk = {
 	name: "milk",
-	total: 500,
-	cap: 500
+	total: 0,
+	cap: 50
 }
-ingredients.push(milk)
+
 var tomatos = {
 	name: "tomatos",
 	total: 16
 }
-ingredients.push(tomatos)
+
 
 var flour = {
 	name: "flour",
@@ -33,8 +32,24 @@ var flour = {
 var water = {
 	name: "water",
 	total: 0,
-	cap: 4000
+	cap: 100
 }
+var dough = {
+	name: "dough",
+	total: 0,
+	cap: 30
+}
+var cheese = {
+	name: "cheese",
+	total: 0,
+	cap: 30
+}
+var tomatoSauce = {
+	name: "tomatoSauce",
+	total: 0,
+	cap: 30
+}
+
 
 var generators = []
 var buildings = []
@@ -105,6 +120,20 @@ let waterPump = {
 generators.push(waterPump)
 document.getElementById("bui2Title").innerHTML = waterPump.name  + "<br>";
 
+let doughMixer = {
+	cost: Math.pow(Math.pow(50,1), 1),
+	name: "Dough Mixer",
+	amount: 0,
+	increase: 10,
+	decrease: [300, 100],
+	mult: 1
+}
+
+generators.push(doughMixer)
+document.getElementById("gen4Title").innerHTML = doughMixer.name  + "<br>";
+
+
+
 const button1 = document.getElementById("button1")
 button1.addEventListener("click",  () => buyGenerator(1));
 const button2 = document.getElementById("button2")
@@ -115,6 +144,8 @@ const button4 = document.getElementById("button4")
 button4.addEventListener("click",  () => buyBuilding2(2));
 const button5 = document.getElementById("button5")
 button5.addEventListener("click",  () => buyGenerator(3));
+const button6 = document.getElementById("button6")
+button6.addEventListener("click",  () => buyGenerator(4));
 
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
@@ -172,6 +203,9 @@ function updateUI() {
 	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2) + "l";
 	document.getElementById("tomatosIng").textContent = "Tomatos: " + (tomatos.total).toFixed(0);
 
+	document.getElementById("doughIng").textContent = "Dough: " + format(dough.total) + " / " + (dough.cap).toFixed(2);
+
+
 	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
 	document.getElementById("availablePlants").textContent = "Available: " + unnassignedPlants + " / " + selectValues.maxPlants
 	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
@@ -181,30 +215,43 @@ function updateUI() {
 	gen3.innerHTML = "<br>Amount: " + vegPatch.amount + "<br>Cost: " + format(vegPatch.cost);
 	bui1.innerHTML = "<br>Amount: " + wheatMill.amount + "<br>Cost: " + format(wheatMill.cost);
 	bui2.innerHTML = "<br>Amount: " + waterPump.amount + "<br>Cost: " + format(waterPump.cost);
+	gen4.innerHTML = "<br>Amount: " + doughMixer.amount + "<br>Cost: " + format(doughMixer.cost);
 }
 
 console.log(plantValues.tomatos)
 
-var wheatCheck = false
+var flourCheck = false
+var doughCheck = false
 
 function productionLoop(diff){
 	wheat.total += wheatField.amount * wheatField.mult * diff * 2
 	if (wheat.total > (wheatMill.amount * wheatMill.decrease)){
 		wheat.total -= (wheatMill.amount * wheatMill.decrease)
-		wheatCheck = true
+		flourCheck = true
 	}
 
-	water.total += waterPump.amount * waterPump.mult * diff
+	water.total += waterPump.amount * waterPump.mult * diff * 2
 	water.total = clamp(water.total, 0, water.cap)
 
 	
-	milk.total += cowsGen.amount * cowsGen.mult * diff
+	milk.total += cowsGen.amount * cowsGen.mult * diff * 0.5
 	milk.total = clamp(milk.total, 0, milk.cap)
 	tomatos.total += plantValues.tomatos * vegPatch.mult * diff;
 	
-	if (wheatCheck == true){
-		flour.total += wheatMill.amount * wheatMill.mult * diff;
-		wheatCheck = false
+	if (flourCheck == true){
+		flour.total += wheatMill.amount * wheatMill.mult * diff * 2;
+		flourCheck = false
+	}
+
+	if (flour.total >= (doughMixer.amount * doughMixer.decrease[0]) && water.total >= (doughMixer.amount * doughMixer.decrease[1])){
+		flour.total -= doughMixer.amount * doughMixer.decrease[0]
+		water.total -= doughMixer.amount * doughMixer.decrease[1]
+		doughCheck = true;
+	}
+
+	if (doughCheck == true) {
+		dough.total += doughMixer.amount * doughMixer.increase * doughMixer.mult;
+		doughCheck = false;
 	}
 	
 
