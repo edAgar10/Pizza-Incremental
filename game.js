@@ -8,47 +8,42 @@ const gen3 = document.getElementById("gen3")
 var totalmoney = 20000000
 
 
-let wheat = {
-	name: "wheat",
-	total: 500
+var ingredients = [];
+
+class Ingredient {
+	constructor(ing) {
+		this.name = ing.name;
+		this.total = ing.total;
+		this.cap = ing.cap;
+	}
 }
 
-var milk = {
-	name: "milk",
-	total: 0,
-	cap: 50
+let ingredientDefaultData = [
+["wheat", 500, 2000],
+["milk",0,50],
+["tomatos",0, 50],
+["flour", 300, 1000],
+["water",0,100],
+["dough",0,30]
+]
+
+function createIngredient(data) {
+	const ing = {
+		name: data[0],
+		total: data[1],
+		cap: data[2]
+	}
+
+	
+	ingredients.push(new Ingredient(ing))
+
 }
 
-var tomatos = {
-	name: "tomatos",
-	total: 16
+for (let i = 0; i < ingredientDefaultData.length; i++) {
+	createIngredient(ingredientDefaultData[i])
 }
 
-
-var flour = {
-	name: "flour",
-	total: 300
-}
-var water = {
-	name: "water",
-	total: 0,
-	cap: 100
-}
-var dough = {
-	name: "dough",
-	total: 0,
-	cap: 30
-}
-var cheese = {
-	name: "cheese",
-	total: 0,
-	cap: 30
-}
-var tomatoSauce = {
-	name: "tomatoSauce",
-	total: 0,
-	cap: 30
-}
+console.log(ingredients)
 
 
 var generators = []
@@ -196,14 +191,14 @@ function updateAvailable(values, max) {
 function updateUI() {
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
 
-	document.getElementById("flourIng").textContent = "Flour: " + format(flour.total) + "g";
-	document.getElementById("waterIng").textContent = "Water: " + (water.total).toFixed(2) + " / " + (water.cap).toFixed(2) + "l";
+	document.getElementById("flourIng").textContent = "Flour: " + format(ingredients[3].total) + "g";
+	document.getElementById("waterIng").textContent = "Water: " + (ingredients[4].total).toFixed(2) + " / " + (ingredients[4].cap).toFixed(2) + "l";
 
-	document.getElementById("wheatIng").textContent = "Wheat: " + format(wheat.total);
-	document.getElementById("milkIng").textContent = "Milk: " + (milk.total).toFixed(2) + " / " + (milk.cap).toFixed(2) + "l";
-	document.getElementById("tomatosIng").textContent = "Tomatos: " + (tomatos.total).toFixed(0);
+	document.getElementById("wheatIng").textContent = "Wheat: " + format(ingredients[0].total);
+	document.getElementById("milkIng").textContent = "Milk: " + (ingredients[1].total).toFixed(2) + " / " + (ingredients[1].cap).toFixed(2) + "l";
+	document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingredients[2].total).toFixed(0);
 
-	document.getElementById("doughIng").textContent = "Dough: " + format(dough.total) + " / " + (dough.cap).toFixed(2);
+	document.getElementById("doughIng").textContent = "Dough: " + format(ingredients[5].total) + " / " + (ingredients[5].cap).toFixed(2);
 
 
 	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
@@ -224,33 +219,33 @@ var flourCheck = false
 var doughCheck = false
 
 function productionLoop(diff){
-	wheat.total += wheatField.amount * wheatField.mult * diff * 2
-	if (wheat.total > (wheatMill.amount * wheatMill.decrease)){
-		wheat.total -= (wheatMill.amount * wheatMill.decrease)
+	ingredients[0].total += wheatField.amount * wheatField.mult * diff * 2
+	if (ingredients[0].total > (wheatMill.amount * wheatMill.decrease)){
+		ingredients[0].total -= (wheatMill.amount * wheatMill.decrease)
 		flourCheck = true
 	}
 
-	water.total += waterPump.amount * waterPump.mult * diff * 2
-	water.total = clamp(water.total, 0, water.cap)
+	ingredients[4].total += waterPump.amount * waterPump.mult * diff * 2
+	ingredients[4].total = clamp(ingredients[4].total, 0, ingredients[4].cap)
 
 	
-	milk.total += cowsGen.amount * cowsGen.mult * diff * 0.5
-	milk.total = clamp(milk.total, 0, milk.cap)
-	tomatos.total += plantValues.tomatos * vegPatch.mult * diff;
+	ingredients[1].total += cowsGen.amount * cowsGen.mult * diff * 0.5
+	ingredients[1].total = clamp(ingredients[1].total, 0, ingredients[1].cap)
+	ingredients[2].total += plantValues.tomatos * vegPatch.mult * diff;
 	
 	if (flourCheck == true){
-		flour.total += wheatMill.amount * wheatMill.mult * diff * 2;
+		ingredients[3].total += wheatMill.amount * wheatMill.mult * diff * 2;
 		flourCheck = false
 	}
 
-	if (flour.total >= (doughMixer.amount * doughMixer.decrease[0]) && water.total >= (doughMixer.amount * doughMixer.decrease[1])){
-		flour.total -= doughMixer.amount * doughMixer.decrease[0]
-		water.total -= doughMixer.amount * doughMixer.decrease[1]
+	if (ingredients[3].total >= (doughMixer.amount * doughMixer.decrease[0]) && ingredients[4].total >= (doughMixer.amount * doughMixer.decrease[1])){
+		ingredients[3].total -= doughMixer.amount * doughMixer.decrease[0]
+		ingredients[4].total -= doughMixer.amount * doughMixer.decrease[1]
 		doughCheck = true;
 	}
 
 	if (doughCheck == true) {
-		dough.total += doughMixer.amount * doughMixer.increase * doughMixer.mult;
+		ingredients[5].total += doughMixer.amount * doughMixer.increase * doughMixer.mult;
 		doughCheck = false;
 	}
 	
