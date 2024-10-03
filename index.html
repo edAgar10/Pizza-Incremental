@@ -3,29 +3,136 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Three JS Test</title>
-		<style>
-			body { margin: 0; }
-			#container { display: flex}
-			#resourceSection {width: 30%}
-			#generatorSection {width: 30%}
-			#worldSection {width: 40%; overflow: hidden;}
-		</style>
-		
+		<link rel='stylesheet' type='text/css' href='style.css'>
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+		<script type='module' src='/main.js'></script>
+		
+		
 		
 	</head>
 	<body>
-		<div id = 'container'>
-			<div id = 'resourceSection'>
+		<div class = 'container'>
+			<section id = 'resourceSection'>
+				<h1>Resources</h1>
+				<h2 id="money"></h2>
+				<div class = resourceContainer>
+
+					<div class="resourceType" id="mainIngredient">
+						<button class="dropdownButton" id="mainIngButton">Main Ingredients</button>
+						<ul class="resourceList" id="mainIngList">
+							<li id="doughIng"></li>
+							<li id="cheeseIng"></li>
+							<li id="tmtSauceIng"></li>
+						</ul>
+					</div>
+					<div class="resourceType" id="sideIngredient">
+						<button class="dropdownButton" id="sideIngButton">Side Ingredients</button>
+						<ul class="resourceList" id="sideIngList">
+							<li id="flourIng"></li>
+							<li id="waterIng"></li>
+						</ul>
+					</div>
+					<div class="resourceType" id="farmIngredient">
+						<button class="dropdownButton" id="farmIngButton">Farm Ingredients</button>
+						<ul class="resourceList" id="farmIngList">
+							<li id="wheatIng"></li>
+							<li id="milkIng"></li>
+							<li id="tomatosIng"></li>
+						</ul>
+					</div>
+
+				</div>
+
 				
-			</div>
-			<div id = 'generatorSection'>
-			
-			</div>
-			<div id = 'worldSection'>
+			</section>
+			<section id = 'generatorSection'>
+				<h1 id="generatorTitle">Buildings</h1>
+				
+				<div class="tabBar">
+					<button class="tabButtonActive" id="tab1">Farm</button>
+					<button class="tabButton" id="tab2">Buildings</button>
+					<button class="tabButton" id="tab3">Orders</button>
+				</div>
+
+				<div id="farmPage" class="tabPage">
+
+					<div id="plantSelectionContainer">
+						<h2>Plants</h2>
+						<p1 id="availablePlants"></p1>
+
+						<div class="valueIncrease" id="tomatos">
+							<button id="valueChangeBtn" class="decreaseBtn">&lt;</button>
+							<p1 id="tomatoPlants">Tomatos: </p1>
+							<button id="valueChangeBtn" class="increaseBtn">&gt;</button>
+						</div>
+
+					</div>
+
+					<div id="generatorContainer">
+
+						<div class="generator">
+							<p1 id="gen1Title"></p1>
+							<button class="dropdownButton" id="button1">Buy</button>
+							<p1 id = "gen1"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen2Title"></p1>
+							<button class="dropdownButton" id="button2">Buy</button>
+							<p1 id = "gen2"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen3Title"></p1>
+							<button class="dropdownButton" id="button3">Buy</button>
+							<p1 id = "gen3"><p1>
+						</div>
+		
+					</div>
+
+				</div>
+				<div id="buildingPage" class="tabPage">
+					<div id="generatorContainer">
+						<div class="generator">
+							<p1 id="bui1Title"></p1>
+							<button class="dropdownButton" id="button4">Buy</button>
+							<p1 id = "bui1"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="bui2Title"></p1>
+							<button class="dropdownButton" id="button5">Buy</button>
+							<p1 id = "bui2"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen4Title"></p1>
+							<button class="dropdownButton" id="button6">Buy</button>
+							<p1 id = "gen4"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen5Title"></p1>
+							<button class="dropdownButton" id="button7">Buy</button>
+							<p1 id = "gen5"><p1>
+						</div>
+						<div class="generator">
+							<p1 id="gen6Title"></p1>
+							<button class="dropdownButton" id="button8">Buy</button>
+							<p1 id = "gen6"><p1>
+						</div>
+					</div>
+					
+				</div>
+				<div id="ordersPage" class="tabPage">
+
+				</div>
+
+			</section>
+			<section id = 'worldSection'>
 				<canvas></canvas>
-			</div> 
+			</section> 
 		</div>
-			<script type="module" src="/main.js"></script>
+		
+		
+		<script type='module' src='/game.js'></script>
 		</body>
 </html>
