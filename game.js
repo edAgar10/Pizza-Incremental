@@ -18,6 +18,13 @@ class Ingredient {
 	}
 }
 
+function ingName(name) {
+	for (let i = 0; i < ingredients.length; i++)
+		if (ingredients[i].name == name) {
+			return ingredients[i]
+		}
+}
+
 let ingredientDefaultData = [
 ["wheat", 500, 2000],
 ["milk",0,50],
@@ -37,13 +44,123 @@ function createIngredient(data) {
 	
 	ingredients.push(new Ingredient(ing))
 
+
 }
 
 for (let i = 0; i < ingredientDefaultData.length; i++) {
 	createIngredient(ingredientDefaultData[i])
 }
 
-console.log(ingredients)
+
+
+var tempgenerators = []
+
+class t1Generator {
+	constructor(gen) {
+		this.name = gen.name;
+		this.cost = gen.cost;
+		this.amount = gen.amount;
+		this.mult = gen.mult;
+	}
+}
+
+class t2Generator {
+	constructor(gen) {
+		this.name = gen.name;
+		this.cost = gen.cost;
+		this.amount = gen.amount;
+		this.mult = gen.mult;
+		this.increase = gen.increase;
+		this.decrease = gen.decrease;
+	}
+}
+
+
+function genName(name) {
+	for (let i = 0; i < generators.length; i++)
+		if (generators[i].name == name) {
+			return generators[i]
+		}
+}
+
+//Name, Cost, Amount, Mult, Increase, Decrease
+let generatorDefaultData = [
+["Wheat Field", Math.pow(Math.pow(25,1), 1), 1, 2],
+["Cows", Math.pow(Math.pow(50,1), 1), 0, 1],
+["Mill", Math.pow(Math.pow(50,1), 1), 0, 1, 2, 1],
+["Water Pump", Math.pow(Math.pow(50,1), 1), 1, 10],
+["Dough Mixer", Math.pow(Math.pow(50,1), 1), 0, 1, 10, [300,100]]
+]
+
+
+
+function createGenerators(data) {
+	const gen = {
+		name: data[0],
+		cost: data[1],
+	 	amount: data[2],
+		mult: data[3],
+	}
+	if (data.length == 6) {
+		Object.assign(gen, {increase: data[4]}, {decrease: data[5]})
+		tempgenerators.push(new t2Generator(gen))
+	}
+	else {
+		tempgenerators.push(new t1Generator(gen))
+	}
+}
+
+for (let i = 0; i < generatorDefaultData.length; i++) {
+	createGenerators(generatorDefaultData[i])
+}
+
+
+
+var selectGenerators= [];
+
+class SelectGenerator {
+	constructor(gen) {
+		this.name = gen.name;
+		this.cost = gen.cost;
+		this.amount = gen.amount;
+		this.mult = gen.mult;
+		this.increase = gen.increase;
+		this.value = gen.value;
+	}
+}
+
+function slctGenName(name) {
+	for (let i = 0; i < ingredients.length; i++)
+		if (ingredients[i].name == name) {
+			return ingredients[i]
+		}
+}
+
+let selectgenDefaultData = [
+["Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1, ("maxPlants")],
+]
+
+function createSelectGen(data) {
+	const ing = {
+		name: data[0],
+		cost:  data[1],
+		amount:  data[2],
+		mult:  data[3], 
+		increase:  data[4],
+		value:  data[5]
+	}
+	
+	selectGenerators.push(new SelectGenerator(ing))
+
+
+}
+
+for (let i = 0; i < selectgenDefaultData.length; i++) {
+	createSelectGen(selectgenDefaultData[i])
+}
+
+console.log(selectGenerators)
+
 
 
 var generators = []
@@ -191,14 +308,14 @@ function updateAvailable(values, max) {
 function updateUI() {
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
 
-	document.getElementById("flourIng").textContent = "Flour: " + format(ingredients[3].total) + "g";
-	document.getElementById("waterIng").textContent = "Water: " + (ingredients[4].total).toFixed(2) + " / " + (ingredients[4].cap).toFixed(2) + "l";
+	document.getElementById("flourIng").textContent = "Flour: " + format(ingName("flour").total) + "g";
+	document.getElementById("waterIng").textContent = "Water: " + (ingName("water").total).toFixed(2) + " / " + (ingName("water").cap).toFixed(2) + "l";
 
-	document.getElementById("wheatIng").textContent = "Wheat: " + format(ingredients[0].total);
-	document.getElementById("milkIng").textContent = "Milk: " + (ingredients[1].total).toFixed(2) + " / " + (ingredients[1].cap).toFixed(2) + "l";
-	document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingredients[2].total).toFixed(0);
+	document.getElementById("wheatIng").textContent = "Wheat: " + format(ingName("wheat").total);
+	document.getElementById("milkIng").textContent = "Milk: " + (ingName("milk").total).toFixed(2) + " / " + (ingName("milk").cap).toFixed(2) + "l";
+	document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingName("tomatos").total).toFixed(0);
 
-	document.getElementById("doughIng").textContent = "Dough: " + format(ingredients[5].total) + " / " + (ingredients[5].cap).toFixed(2);
+	document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
 
 
 	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
