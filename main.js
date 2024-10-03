@@ -1,31 +1,95 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import vertexShader from './Shaders/vertex.glsl?raw'
 import fragmentShader from './Shaders/fragment.glsl?raw'
+
+import borderVrtxShader from './Shaders/borderVertex.glsl?raw'
+import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 
+
+//Ready document
+
+$(document).ready(function() {
+	$("#buildingPage").hide();
+	$("#ordersPage").hide();
+});
+
+const textureLoader = new THREE.TextureLoader();
+
+// Rendering the planet section
+
+const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas'), alpha: true});
+renderer.setPixelRatio(window.devicePixelRatio)
+
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000);
-
-const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.querySelector('canvas')});
-renderer.setSize( window.innerWidth * 0.4, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
-
-const geometry = new THREE.SphereGeometry( 5, 50, 50 );
-const material = new THREE.ShaderMaterial({vertexShader, fragmentShader, uniforms: {globeTexture: {value: new THREE.TextureLoader().load('./Assets/worldmap.jpg')}}});
-const sphere = new THREE.Mesh( geometry, material );
+const  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
+const controls = new OrbitControls(camera, renderer.domElement)
+controls.autoRotate = false
+controls.enablePan = false
+controls.maxDistance = 50
 
 
-const atmGeometry = new THREE.SphereGeometry( 5, 50, 50 );
+
+const group = new THREE.Group()
+
+const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
+
+
+// const uniforms = {
+// 	sunDirection: {value: new THREE.Vector3(0,1,0)},
+// 	dayTexture: {value: textureLoader.load('./Assets/earthuv.png')},
+// 	nightTexture: {value: textureLoader.load('./Assets/earthuvnight.png')}
+// }
+
+
+// /const sphereMaterial = new THREE.ShaderMaterial({
+// 	vertexShader, 
+// 	fragmentShader, 
+// 	uniforms: {globeTexture: {value: textureLoader.load('./Assets/earthuv.png')}}
+// });
+// const sphereMaterial = new THREE.ShaderMaterial({ 
+// 	uniforms: uniforms,
+// 	vertexShader: vertexShader,
+// 	fragmentShader: fragmentShader
+// });
+
+const sphereMaterial = new THREE.MeshStandardMaterial({
+	map: textureLoader.load('./Assets/earthuv.png')
+});
+const sphere = new THREE.Mesh( globeGeometry, sphereMaterial);
+
+ const darksideMat = new THREE.MeshBasicMaterial({ 
+ 	map: textureLoader.load('./Assets/earthuvnight.png'),
+ 	blending: THREE.AdditiveBlending
+
+}); 
+
+const darksideMesh = new THREE.Mesh(globeGeometry, darksideMat);
+
+const sphereBorder = new THREE.Mesh(globeGeometry, 
+new THREE.ShaderMaterial({vertexShader: borderVrtxShader, fragmentShader: borderFrgmShader, blending: THREE.AdditiveBlending, side: THREE.BackSide}));
+
+sphereBorder.scale.set(1.01, 1.01, 1.01);
+group.add(sphereBorder);
+
+const atmGeometry = globeGeometry;
 const atmMaterial = new THREE.ShaderMaterial({vertexShader: atmVertexShader, fragmentShader: atmFragmentShader, blending: THREE.AdditiveBlending, side: THREE.BackSide});
 const atmosphere = new THREE.Mesh( atmGeometry, atmMaterial );
 
-atmosphere.scale.set(1.1, 1.1, 1.1)
-scene.add(atmosphere)
 
-const group = new THREE.Group()
+
+atmosphere.scale.set(1.1, 1.1, 1.1)
+group.add(atmosphere)
+
+
+
 group.add(sphere)
+group.add(darksideMesh)
+
+scene.add(group)
 
 
 const starGeometry = new THREE.BufferGeometry()
@@ -42,83 +106,137 @@ starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVerti
 
 const stars = new THREE.Points(starGeometry, starMaterial)
 
-group.add(stars)
+scene.add(stars)
 
-scene.add(group)
+const sunMat = new THREE.MeshStandardMaterial({
+	emissive: new THREE.Color(0xffffff)
+
+});
+
+const sunGroup = new THREE.Group()
+
+const sunMesh = new THREE.Mesh(globeGeometry, sunMat)
+const sunlight = new THREE.PointLight(0xffffff, 1000000);
+	
+const sunAtmosphere = new THREE.Mesh( atmGeometry, atmMaterial );
+sunAtmosphere.scale.set(2, 2, 2);
+
+sunGroup.add(sunMesh);
+sunGroup.add(sunlight);
+sunGroup.add(sunAtmosphere);
+
+scene.add(sunGroup);
+
+const sunCurve = new THREE.EllipseCurve(
+	0, 0,
+	200, 200,
+	0, 2 * Math.PI, false
+);
+const point = sunCurve.getSpacedPoints(200)
 
 camera.position.z = 20;
 camera.position.z.clamp
-
-// const mouse = {
-	// x: undefined,
-	// y: undefined
-// }
-
-var mouseDown = false,
-	mouseX = 0,
-	mouseY = 0;
-	
+controls.update();
 
 	
-function onMouseMove(evt) {
-	if(!mouseDown) {
-		return
+function resizeCanvas() {
+	const canvas = renderer.domElement;
+	const width = canvas.clientWidth;
+	const height = canvas.clientHeight;
+	if (canvas.width !== width || canvas.height !== height) {
+		renderer.setSize(width, height, false);
+		camera.aspect = width/height;
+		camera.updateProjectionMatrix();
 	}
 	
-	evt.preventDefault();
-	
-	var deltaX = evt.clientX - mouseX;
-	var deltaY = evt.clientY - mouseY;
-	mouseX = evt.clientX;
-	mouseY = evt.clientY;
-	rotateScene(deltaX, deltaY);
 }
 
-function onMouseDown(evt) {
-	evt.preventDefault();
-	mouseDown = true;
-	mouseX = evt.clientX;
-	mouseY = evt.clientY;
-	console.log(mouseX);
-	console.log(mouseY);
-	
-}
-
-function onMouseUp(evt) {
-	evt.preventDefault();
-	mouseDown = false;
-	
-}
-
-
-function rotateScene(deltaX, deltaY) {
-    group.rotation.y += deltaX / 100;
-    group.rotation.x += deltaY / 100;
-}
-
-function updateCamera(evt) {
-	camera.position.z = clamp((camera.position.z - evt.deltaY / 100.0), 10, 25)
-	if (camera.position.z < 20) {
-		atmosphere.scale.set(1.2, 1.2, 1.2)
-	}
-	else {
-		atmosphere.scale.set(1.1, 1.1, 1.1)
-	}
-		
-}
 
 function clamp(num, min, max){
 	return Math.min(Math.max(num, min), max);
 }
 
+const loopTime = 1;
+const sunOrbitSpeed = 0.00001;
+
+// var dir = new THREE.Vector3();
+// var sunPosition = sunlight.position;
+// const origin = new THREE.Vector3(0,0,0);
+controls.target = group.position
+
 function animate() {
-	sphere.rotation.y += 0.001;
+	const time = sunOrbitSpeed * performance.now();
+	const t = (time % loopTime) / loopTime;
+
+	let p = sunCurve.getPoint(t);
+	group.position.x = p.x;
+	group.position.z = p.y;
+
+	group.rotation.y +=0.001;
+	
+	
+	
+	controls.update();
+	// sunPosition = new THREE.Vector3(p.x, p.y, p.y)
+	
+
+	// console.log(p)
+	// dir.subVectors( sunPosition, origin ).normalize();
+	// uniforms.sunDirection.value.x = dir.x;
+	// uniforms.sunDirection.value.y = dir.z;
+
+	resizeCanvas();
+	
 	renderer.render( scene, camera );
+	requestAnimationFrame(animate);
 	
 }
-renderer.setAnimationLoop( animate )
+requestAnimationFrame(animate);
 
-addEventListener('mousemove', function (e) {onMouseMove(e);}, false);
-addEventListener('mousedown', function (e) {onMouseDown(e);}, false);
-addEventListener('mouseup', function (e) {onMouseUp(e);}, false);
-addEventListener('wheel', function (e) {updateCamera(e);}, false);
+
+// Building page 
+
+const tabList = [document.getElementById("tab1"), document.getElementById("tab2"), document.getElementById("tab3")]
+const pages = document.getElementsByClassName("tabPage")
+let genTitles = document.getElementById("generatorTitle")
+const titles = ["Farm", "Buildings", "Orders"]
+
+
+for (let i = 0; i < tabList.length; i++){
+	
+	tabList[i].addEventListener("click",  () => changeTab(tabList[i]));
+}
+
+
+function changeTab(tabName) {
+	for (let i = 0; i < tabList.length; i++) {
+		if (tabName == tabList[i]) {
+			$(pages[i]).slideToggle();
+ 			genTitles.innerHTML = titles[i];
+			tabList[i].classList.remove("tabButton");
+ 			tabList[i].classList.add("tabButtonActive");
+ 		}
+ 		else {
+ 			$(pages[i]).hide();
+			tabList[i].classList.remove("tabButtonActive");
+ 			tabList[i].classList.add("tabButton");
+ 		}
+	}
+
+}
+
+
+//Resource Page
+
+const resourceLists = [document.getElementById("mainIngList"), document.getElementById("sideIngList"), document.getElementById("farmIngList")]
+
+$(".dropdownButton").on("click", function() {
+	var currentButtonId = $(this).attr("id");
+
+	for (let i = 0; i < resourceLists.length; i++){
+		console.log()
+		if ((currentButtonId.split("Button").join("")) == ((resourceLists[i].id).split("List").join(""))){
+			$(resourceLists[i]).slideToggle(1000);
+		}
+	}
+});
