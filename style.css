@@ -1,5 +1,5 @@
 html {height: 100%; overflow: hidden; font-family: 'Roboto', sans-serif;}
-body { margin: 0; height: 100%; overflow: hidden; background-color:  rgb(24, 24, 24);}
+body { margin: 0; height: 100%; overflow: hidden; background-color:  rgb(18, 18, 18);}
 * {box-sizing: border-box;}		
 .container { display: inline-flex; width: 100vw; height: 100vh;}
 .container>* { flex: 1 1 50%;}
@@ -41,7 +41,7 @@ p1 {
 /* Resource List and Dropdown Menus */
 
 .resourceContainer {
-	background-color:  rgb(24, 24, 24);
+	background-color:  rgb(18, 18, 18);
 }
 
 .resourceType {
@@ -152,7 +152,7 @@ p1 {
 	height: 100%;
 	overflow-y: auto;
 	padding: 5%;
-	background-color: rgb(24, 24, 24);
+	background-color: rgb(18, 18, 18);
 	border-top: 2px solid rgb(255, 255, 255);
 	width: 100%;
 
