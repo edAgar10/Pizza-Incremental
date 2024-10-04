@@ -175,7 +175,6 @@ function animate() {
 	group.rotation.y +=0.001;
 	
 	
-	
 	controls.update();
 	// sunPosition = new THREE.Vector3(p.x, p.y, p.y)
 	
