@@ -1,12 +1,11 @@
 import { KeyframeTrack } from "three"
 import { clamp } from "three/src/math/MathUtils.js"
 
-const gen1 = document.getElementById("gen1")
-const gen2 = document.getElementById("gen2")
-const gen3 = document.getElementById("gen3")
+var lastUpdate = Date.now()
 
 var totalmoney = 20000000
 
+//Ingredients
 
 var ingredients = [];
 
@@ -51,21 +50,24 @@ for (let i = 0; i < ingredientDefaultData.length; i++) {
 	createIngredient(ingredientDefaultData[i])
 }
 
+//Generators//
 
-
-var tempgenerators = []
+var generators = []
 
 class t1Generator {
 	constructor(gen) {
+		this.id = gen.id;
 		this.name = gen.name;
 		this.cost = gen.cost;
 		this.amount = gen.amount;
 		this.mult = gen.mult;
 	}
+
 }
 
 class t2Generator {
 	constructor(gen) {
+		this.id = gen.id;
 		this.name = gen.name;
 		this.cost = gen.cost;
 		this.amount = gen.amount;
@@ -83,30 +85,41 @@ function genName(name) {
 		}
 }
 
-//Name, Cost, Amount, Mult, Increase, Decrease
+function buyGenerator(i) {
+	console.log("gen bought")
+	let g = generators[i-1]
+	if (g.cost > totalmoney) return
+	totalmoney -= g.cost
+	g.amount += 1
+	g.mult *= 1.05
+	g.cost *= 1.5
+}
+
+//ID, Name, Cost, Amount, Mult, Increase, Decrease
 let generatorDefaultData = [
-["Wheat Field", Math.pow(Math.pow(25,1), 1), 1, 2],
-["Cows", Math.pow(Math.pow(50,1), 1), 0, 1],
-["Mill", Math.pow(Math.pow(50,1), 1), 0, 1, 2, 1],
-["Water Pump", Math.pow(Math.pow(50,1), 1), 1, 10],
-["Dough Mixer", Math.pow(Math.pow(50,1), 1), 0, 1, 10, [300,100]]
+[1,"Wheat Field", Math.pow(Math.pow(25,1), 1), 1, 2],
+[2,"Cows", Math.pow(Math.pow(50,1), 1), 0, 1],
+[3,"Mill", Math.pow(Math.pow(50,1), 1), 0, 1, 2, 1],
+[4,"Water Pump", Math.pow(Math.pow(50,1), 1), 1, 10],
+[5,"Dough Mixer", Math.pow(Math.pow(50,1), 1), 0, 1, 10, [300,100]]
 ]
 
 
 
 function createGenerators(data) {
 	const gen = {
-		name: data[0],
-		cost: data[1],
-	 	amount: data[2],
-		mult: data[3],
+		id: data[0],
+		name: data[1],
+		cost: data[2],
+	 	amount: data[3],
+		mult: data[4],
 	}
-	if (data.length == 6) {
-		Object.assign(gen, {increase: data[4]}, {decrease: data[5]})
-		tempgenerators.push(new t2Generator(gen))
+	if (data.length == 7) {
+		Object.assign(gen, {increase: data[5]}, {decrease: data[6]})
+		generators.push(new t2Generator(gen))
 	}
 	else {
-		tempgenerators.push(new t1Generator(gen))
+		generators.push(new t1Generator(gen))
 	}
 }
 
@@ -114,151 +127,114 @@ for (let i = 0; i < generatorDefaultData.length; i++) {
 	createGenerators(generatorDefaultData[i])
 }
 
+getTitles("gen", generators)
+assignButtons("gen", generators)
 
+console.log(generators)
 
-var selectGenerators= [];
+//Buildings//
 
-class SelectGenerator {
-	constructor(gen) {
-		this.name = gen.name;
-		this.cost = gen.cost;
-		this.amount = gen.amount;
-		this.mult = gen.mult;
-		this.increase = gen.increase;
-		this.value = gen.value;
+var buildings = []
+
+class Building {
+	constructor(bui) {
+		this.id = bui.id;
+		this.name = bui.name;
+		this.cost = bui.cost;
+		this.amount = bui.amount;
+		this.mult = bui.mult;
+		this.increase = bui.increase;
+		this.value = bui.value;
 	}
+
 }
 
-function slctGenName(name) {
-	for (let i = 0; i < ingredients.length; i++)
-		if (ingredients[i].name == name) {
-			return ingredients[i]
+function buyBuilding(i) {
+	console.log("building bought")
+	let b = buildings[i-1]
+	if (b.cost > totalmoney) return
+	totalmoney -= b.cost
+	b.amount += 1
+	selectValues[b.value] += b.increase
+	b.cost *= 1.5
+	console.log(selectValues.maxPlants)
+}
+
+function buildingName(name) {
+	for (let i = 0; i < buildings.length; i++)
+		if (buildings[i].name == name) {
+			return buildings[i]
 		}
 }
 
-let selectgenDefaultData = [
-["Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1, ("maxPlants")],
+let buildingDefaultData = [
+[1,"Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1, ("maxPlants")],
 ]
 
-function createSelectGen(data) {
+function createBuilding(data) {
 	const ing = {
-		name: data[0],
-		cost:  data[1],
-		amount:  data[2],
-		mult:  data[3], 
-		increase:  data[4],
-		value:  data[5]
+		id: data[0],
+		name: data[1],
+		cost:  data[2],
+		amount:  data[3],
+		mult:  data[4], 
+		increase:  data[5],
+		value:  data[6]
 	}
 	
-	selectGenerators.push(new SelectGenerator(ing))
+	buildings.push(new Building(ing))
 
 
 }
 
-for (let i = 0; i < selectgenDefaultData.length; i++) {
-	createSelectGen(selectgenDefaultData[i])
+
+for (let i = 0; i < buildingDefaultData.length; i++) {
+	createBuilding(buildingDefaultData[i])
 }
 
-console.log(selectGenerators)
+getTitles("bui", buildings)
+assignButtons("bui", buildings)
 
 
 
-var generators = []
-var buildings = []
-var lastUpdate = Date.now()
-
-let wheatField = {
-	cost: Math.pow(Math.pow(25,1), 1),
-	name: "Wheat Field",
-	amount: 1, 
-	mult: 2
+function getTitles(type,objects) {
+	for (let i = 0; i < objects.length; i++) {
+		let currentTitleID = type + objects[i].id + "Title";
+		document.getElementById(currentTitleID).innerHTML = objects[i].name + "<br>";
+	}
 }
 
-generators.push(wheatField)
-document.getElementById("gen1Title").innerHTML = wheatField.name + "<br>";
-
-
-let cowsGen = {
-	cost: Math.pow(Math.pow(50,1), 1),
-	name: "Cows",
-	amount: 0, 
-	mult: 1
+function assignButtons(type,objects) {
+	for (let i = 0; i < objects.length; i++) {
+		let currentButtonID = type + objects[i].id + "Button";
+		if (type == "gen"){
+			document.getElementById(currentButtonID).addEventListener("click", () => buyGenerator(objects[i].id))
+		}
+		else if (type == "bui") {
+			document.getElementById(currentButtonID).addEventListener("click", () => buyBuilding(objects[i].id))
+		}
+		
+	}
 }
 
-generators.push(cowsGen)
-document.getElementById("gen2Title").innerHTML = cowsGen.name  + "<br>";
+function updateContainerUI(type, objects) {
+	for (let i = 0; i < objects.length; i++) {
+		let currentContainerID = type + objects[i].id;
+		document.getElementById(currentContainerID).innerHTML = "<br>Amount: " + objects[i].amount + "<br>Cost: " + objects[i].cost;
+	}
+	
+}
+
+
 
 let selectValues = {
 	maxPlants: 0
 }
-
 var unnassignedPlants = 0;
-
-let vegPatch = {
-	cost: Math.pow(Math.pow(50,1), 1),
-	name: "Vegetable Patch",
-	amount: 0,
-	value: ("maxPlants"), 
-	increase: 1,
-	mult: 1
-}
-
-buildings.push(vegPatch)
-document.getElementById("gen3Title").innerHTML = vegPatch.name  + "<br>";
-
-let wheatMill = {
-	cost: Math.pow(Math.pow(50,1), 1),
-	name: "Mill",
-	amount: 0,
-	increase: 2,
-	decrease: 1,
-	mult: 1
-}
-
-buildings.push(wheatMill)
-document.getElementById("bui1Title").innerHTML = wheatMill.name  + "<br>";
-
 
 let plantValues = {
 	tomatos: 0
 }
-
-let waterPump = {
-	cost: Math.pow(Math.pow(50,1), 1),
-	name: "Water Pump",
-	amount: 1, 
-	mult: 10
-}
-generators.push(waterPump)
-document.getElementById("bui2Title").innerHTML = waterPump.name  + "<br>";
-
-let doughMixer = {
-	cost: Math.pow(Math.pow(50,1), 1),
-	name: "Dough Mixer",
-	amount: 0,
-	increase: 10,
-	decrease: [300, 100],
-	mult: 1
-}
-
-generators.push(doughMixer)
-document.getElementById("gen4Title").innerHTML = doughMixer.name  + "<br>";
-
-
-
-const button1 = document.getElementById("button1")
-button1.addEventListener("click",  () => buyGenerator(1));
-const button2 = document.getElementById("button2")
-button2.addEventListener("click",  () => buyGenerator(2));
-const button3 = document.getElementById("button3")
-button3.addEventListener("click",  () => buyBuilding(1));
-const button4 = document.getElementById("button4")
-button4.addEventListener("click",  () => buyBuilding2(2));
-const button5 = document.getElementById("button5")
-button5.addEventListener("click",  () => buyGenerator(3));
-const button6 = document.getElementById("button6")
-button6.addEventListener("click",  () => buyGenerator(4));
-
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
 const decreaseButtons = document.getElementsByClassName("decreaseBtn")
@@ -292,9 +268,6 @@ function format(amount) {
 	
 }
 
-function clampResource(resource, min, max) {
-	return Math.min(Math.max(this,min), max);
-}
 
 function updateAvailable(values, max) {
 	var result = max;
@@ -322,12 +295,8 @@ function updateUI() {
 	document.getElementById("availablePlants").textContent = "Available: " + unnassignedPlants + " / " + selectValues.maxPlants
 	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
 
-	gen1.innerHTML = "<br>Amount: " + wheatField.amount + "<br>Cost: " + format(wheatField.cost);
-	gen2.innerHTML = "<br>Amount: " + cowsGen.amount + "<br>Cost: " + format(cowsGen.cost);
-	gen3.innerHTML = "<br>Amount: " + vegPatch.amount + "<br>Cost: " + format(vegPatch.cost);
-	bui1.innerHTML = "<br>Amount: " + wheatMill.amount + "<br>Cost: " + format(wheatMill.cost);
-	bui2.innerHTML = "<br>Amount: " + waterPump.amount + "<br>Cost: " + format(waterPump.cost);
-	gen4.innerHTML = "<br>Amount: " + doughMixer.amount + "<br>Cost: " + format(doughMixer.cost);
+	updateContainerUI("gen", generators)
+	updateContainerUI("bui", buildings)
 }
 
 console.log(plantValues.tomatos)
@@ -336,71 +305,43 @@ var flourCheck = false
 var doughCheck = false
 
 function productionLoop(diff){
-	ingredients[0].total += wheatField.amount * wheatField.mult * diff * 2
-	if (ingredients[0].total > (wheatMill.amount * wheatMill.decrease)){
-		ingredients[0].total -= (wheatMill.amount * wheatMill.decrease)
+	ingredients[0].total += genName("Wheat Field").amount * genName("Wheat Field").mult * diff * 2
+	if (ingredients[0].total > (genName("Mill").amount * genName("Mill").decrease)){
+		ingredients[0].total -= (genName("Mill").amount * genName("Mill").decrease)
 		flourCheck = true
 	}
 
-	ingredients[4].total += waterPump.amount * waterPump.mult * diff * 2
+	ingredients[4].total += genName("Water Pump").amount * genName("Water Pump").mult * diff * 2
 	ingredients[4].total = clamp(ingredients[4].total, 0, ingredients[4].cap)
 
 	
-	ingredients[1].total += cowsGen.amount * cowsGen.mult * diff * 0.5
+	ingredients[1].total += genName("Cows").amount * genName("Cows").mult * diff * 0.5
 	ingredients[1].total = clamp(ingredients[1].total, 0, ingredients[1].cap)
-	ingredients[2].total += plantValues.tomatos * vegPatch.mult * diff;
+	ingredients[2].total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
 	
 	if (flourCheck == true){
-		ingredients[3].total += wheatMill.amount * wheatMill.mult * diff * 2;
+		ingredients[3].total += genName("Mill").amount * genName("Mill").mult * diff * 2;
 		flourCheck = false
 	}
 
-	if (ingredients[3].total >= (doughMixer.amount * doughMixer.decrease[0]) && ingredients[4].total >= (doughMixer.amount * doughMixer.decrease[1])){
-		ingredients[3].total -= doughMixer.amount * doughMixer.decrease[0]
-		ingredients[4].total -= doughMixer.amount * doughMixer.decrease[1]
+	if (ingredients[3].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]) && ingredients[4].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1])){
+		ingredients[3].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]
+		ingredients[4].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1]
 		doughCheck = true;
 	}
 
 	if (doughCheck == true) {
-		ingredients[5].total += doughMixer.amount * doughMixer.increase * doughMixer.mult;
+		ingredients[5].total += genName("Dough Mixer").amount * genName("Dough Mixer").increase * genName("Dough Mixer").mult;
 		doughCheck = false;
 	}
-	
-
 
 	
 }
 
 
-function buyGenerator(i) {
-	console.log("gen bought")
-	let g = generators[i-1]
-	if (g.cost > totalmoney) return
-	totalmoney -= g.cost
-	g.amount += 1
-	g.mult *= 1.05
-	g.cost *= 1.5
-}
 
-function buyBuilding(i) {
-	console.log("building bought")
-	let b = buildings[i-1]
-	if (b.cost > totalmoney) return
-	totalmoney -= b.cost
-	b.amount += 1
-	selectValues[b.value] += b.increase
-	b.cost *= 1.5
-	console.log(selectValues.maxPlants)
-}
 
-function buyBuilding2(i) {
-	console.log("building bought")
-	let b = buildings[i-1]
-	if (b.cost > totalmoney) return
-	totalmoney -= b.cost
-	b.amount += 1
-	b.cost *= 1.5
-}
+
 
 
 
