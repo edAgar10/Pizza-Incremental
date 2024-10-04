@@ -209,6 +209,45 @@ p1 {
 
 }
 
+.generatorButton {
+	width: 100%;
+	margin: auto;
+	display:flex;
+	justify-content: center;
+	cursor: pointer;
+	color: white;
+	background-color: black;
+	border: 1px solid white;
+	border-radius: 2%;
+	box-shadow: #fff 4px 4px 0 0,#000 4px 4px 0 1px;
+}
 
+.generatorButton:focus {
+	text-decoration: none;
+  }
+  
+  .generatorButton:hover {
+	text-decoration: none;
+	background-color: white;
+	color: black;
+	border: 1px solid black;
+	box-shadow: #000 4px 4px 0 0,#fff 4px 4px 0 1px;
+  }
+  
+  .generatorButton:active {
+	box-shadow: rgb(255, 255, 255) 0 3px 5px inset;
+	outline: 0;
+  }
+  
+  .generatorButton:not([disabled]):active {
+	box-shadow: #ffffff 2px 2px 0 0, #000 2px 2px 0 1px;
+	transform: translate(2px, 2px);
+  }
+  
+  @media (min-width: 768px) {
+	.generatorButton {
+	  padding: 12px 50px;
+	}
+  }
 
 
