@@ -14,6 +14,7 @@ class Ingredient {
 		this.name = ing.name;
 		this.total = ing.total;
 		this.cap = ing.cap;
+		this.uiID = ing.uiID;
 	}
 }
 
@@ -24,20 +25,29 @@ function ingName(name) {
 		}
 }
 
+function updateIngredientUI(ing) {
+	document.getElementById(ing.uiID).textContent = ing.name + ": " + ((ing.total).toFixed(2)) + " / " + ((ing.cap).toFixed(2));
+}
+
+//Name, Total, Cap, UI ID
 let ingredientDefaultData = [
-["wheat", 500, 2000],
-["milk",0,50],
-["tomatos",0, 50],
-["flour", 300, 1000],
-["water",0,100],
-["dough",0,30]
+["Wheat", 500, 2000, "wheatIng"],
+["Milk",0,50, "milkIng"],
+["Tomatos",0, 50, "tomatosIng"],
+["Flour", 300, 1000, "flourIng"],
+["Water",0,100, "waterIng"],
+["Dough",0,30, "doughIng"],
+["Cheese",0,30, "cheeseIng"],
+["Tomato Sauce",0, 30, "tmtSauceIng"]
 ]
+
 
 function createIngredient(data) {
 	const ing = {
 		name: data[0],
 		total: data[1],
-		cap: data[2]
+		cap: data[2],
+		uiID: data[3]
 	}
 
 	
@@ -251,7 +261,6 @@ for (let i = 0; i < decreaseButtons.length; i++){
 
 function increaseValue(id) {
 	if (unnassignedPlants == 0) {return}
-	console.log(id)
 	plantValues[id] += 1
 }
 function decreaseValue(id) {
@@ -278,17 +287,26 @@ function updateAvailable(values, max) {
 }
 
 
+
+
 function updateUI() {
+
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
 
-	document.getElementById("flourIng").textContent = "Flour: " + format(ingName("flour").total) + "g";
-	document.getElementById("waterIng").textContent = "Water: " + (ingName("water").total).toFixed(2) + " / " + (ingName("water").cap).toFixed(2) + "l";
+	for (let i = 0; i < ingredients.length; i++) {
+		updateIngredientUI(ingredients[i])
+	}
 
-	document.getElementById("wheatIng").textContent = "Wheat: " + format(ingName("wheat").total);
-	document.getElementById("milkIng").textContent = "Milk: " + (ingName("milk").total).toFixed(2) + " / " + (ingName("milk").cap).toFixed(2) + "l";
-	document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingName("tomatos").total).toFixed(0);
+	
 
-	document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
+	// document.getElementById("flourIng").textContent = "Flour: " + format(ingName("flour").total) + "g";
+	// document.getElementById("waterIng").textContent = "Water: " + (ingName("water").total).toFixed(2) + " / " + (ingName("water").cap).toFixed(2) + "l";
+
+	// document.getElementById("wheatIng").textContent = "Wheat: " + format(ingName("wheat").total);
+	// document.getElementById("milkIng").textContent = "Milk: " + (ingName("milk").total).toFixed(2) + " / " + (ingName("milk").cap).toFixed(2) + "l";
+	// document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingName("tomatos").total).toFixed(0);
+
+	// document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
 
 
 	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
