@@ -25,15 +25,22 @@ const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.query
 renderer.setPixelRatio(window.devicePixelRatio)
 
 const scene = new THREE.Scene();
-const  camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
+camera.position.set(10, 10, -10);
+camera.updateProjectionMatrix();
 const controls = new OrbitControls(camera, renderer.domElement)
-controls.autoRotate = false
-controls.enablePan = false
-controls.maxDistance = 50
+
+
+controls.autoRotate = false;
+controls.maxDistance = 100;
+controls.minDistance = 10;
+controls.minTargetRadius = 10;
+
 
 
 
 const group = new THREE.Group()
+
 
 const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
 
@@ -115,10 +122,11 @@ const sunMat = new THREE.MeshStandardMaterial({
 
 const sunGroup = new THREE.Group()
 
-const sunMesh = new THREE.Mesh(globeGeometry, sunMat)
+const sunGeometry = new THREE.IcosahedronGeometry( 20, 50 );
+const sunMesh = new THREE.Mesh(sunGeometry, sunMat)
 const sunlight = new THREE.PointLight(0xffffff, 1000000);
 	
-const sunAtmosphere = new THREE.Mesh( atmGeometry, atmMaterial );
+const sunAtmosphere = new THREE.Mesh( sunGeometry, atmMaterial );
 sunAtmosphere.scale.set(2, 2, 2);
 
 sunGroup.add(sunMesh);
@@ -129,14 +137,13 @@ scene.add(sunGroup);
 
 const sunCurve = new THREE.EllipseCurve(
 	0, 0,
-	200, 200,
+	500, 500,
 	0, 2 * Math.PI, false
 );
-const point = sunCurve.getSpacedPoints(200)
+const point = sunCurve.getSpacedPoints(500)
 
-camera.position.z = 20;
-camera.position.z.clamp
-controls.update();
+
+
 
 	
 function resizeCanvas() {
@@ -162,27 +169,27 @@ const sunOrbitSpeed = 0.00001;
 // var dir = new THREE.Vector3();
 // var sunPosition = sunlight.position;
 // const origin = new THREE.Vector3(0,0,0);
+
+
 controls.target = group.position
+controls.update();
 
 function animate() {
 	const time = sunOrbitSpeed * performance.now();
 	const t = (time % loopTime) / loopTime;
 
+	
+
 	let p = sunCurve.getPoint(t);
+
+
 	group.position.x = p.x;
 	group.position.z = p.y;
 
 	group.rotation.y +=0.001;
 	
-	
-	controls.update();
-	// sunPosition = new THREE.Vector3(p.x, p.y, p.y)
-	
 
-	// console.log(p)
-	// dir.subVectors( sunPosition, origin ).normalize();
-	// uniforms.sunDirection.value.x = dir.x;
-	// uniforms.sunDirection.value.y = dir.z;
+	controls.update();
 
 	resizeCanvas();
 	
@@ -192,6 +199,18 @@ function animate() {
 }
 requestAnimationFrame(animate);
 
+
+function getScale(i) {
+	if (i == 0) {
+		return -0
+	} 
+	else if ( i > 0) {
+		return 1
+	}
+	else {
+		return -1
+	}
+}
 
 // Building page 
 
