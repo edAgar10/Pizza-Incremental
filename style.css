@@ -149,7 +149,7 @@ p1 {
 
 
 .tabPage {
-	height: 100%;
+	height: 90%;
 	overflow-y: auto;
 	padding: 5%;
 	background-color: rgb(18, 18, 18);
@@ -158,7 +158,7 @@ p1 {
 
 }
 
-#plantSelectionContainer {
+.selectionContainer {
 	display:inline-flex;
 	width:100%;
 	padding: 15px;
