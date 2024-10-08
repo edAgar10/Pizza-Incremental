@@ -8,7 +8,7 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
-import { materialOpacity } from 'three/webgpu';
+
 
 
 //Ready document
@@ -45,24 +45,6 @@ const group = new THREE.Group()
 
 const globeGeometry = new THREE.IcosahedronGeometry( 5, 50 );
 
-
-// const uniforms = {
-// 	sunDirection: {value: new THREE.Vector3(0,1,0)},
-// 	dayTexture: {value: textureLoader.load('./Assets/earthuv.png')},
-// 	nightTexture: {value: textureLoader.load('./Assets/earthuvnight.png')}
-// }
-
-
-// /const sphereMaterial = new THREE.ShaderMaterial({
-// 	vertexShader, 
-// 	fragmentShader, 
-// 	uniforms: {globeTexture: {value: textureLoader.load('./Assets/earthuv.png')}}
-// });
-// const sphereMaterial = new THREE.ShaderMaterial({ 
-// 	uniforms: uniforms,
-// 	vertexShader: vertexShader,
-// 	fragmentShader: fragmentShader
-// });
 
 const sphereMaterial = new THREE.MeshStandardMaterial({
 	map: textureLoader.load('./Assets/earthuv.png')
@@ -200,10 +182,18 @@ function cameraLock() {
 
 }
 
+
+var mouseOnDiv = false;
+$(worldSection).mouseenter(function(){mouseOnDiv = true});
+$(worldSection).mouseleave(function(){mouseOnDiv = false});
+
 addEventListener("wheel", (event) => {
 
-	cameraDistance += event.deltaY;
-	cameraDistance = clamp(cameraDistance, 10, 150)
+	if (mouseOnDiv == true) {
+		cameraDistance += event.deltaY;
+		cameraDistance = clamp(cameraDistance, 10, 150)
+	}
+	
 
 });
 
