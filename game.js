@@ -179,6 +179,7 @@ function buildingName(name) {
 
 let buildingDefaultData = [
 [1,"Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1, ("maxPlants")],
+[2, "Kitchen", Math.pow(Math.pow(100,1), 1), 1, 1, 1, ("maxWorkers")]
 ]
 
 function createBuilding(data) {
@@ -238,12 +239,23 @@ function updateContainerUI(type, objects) {
 
 
 let selectValues = {
-	maxPlants: 0
+	maxPlants: 0,
+	maxWorkers: 1,
 }
-var unnassignedPlants = 0;
+
+let selectUnassigned = {
+	unassignedPlants: 0,
+	unassignedWorkers: 0
+}
+
 
 let plantValues = {
 	tomatos: 0
+}
+
+let kitchenValues = {
+	dough: 0,
+	tmtSauce: 0
 }
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
@@ -252,20 +264,33 @@ const decreaseButtons = document.getElementsByClassName("decreaseBtn")
 console.log(increaseButtons)
 
 for (let i = 0; i < increaseButtons.length; i++){
-	increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id));
+	let selectType = increaseButtons[i].parentNode.parentNode.id
+	if (selectType == "plantSelect"){
+		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id, selectUnassigned.unassignedPlants, plantValues));
+	}
+	else if (selectType == "workerSelect") {
+		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id, selectUnassigned.unassignedWorkers, kitchenValues));
+	}
+	
 }
 
 for (let i = 0; i < decreaseButtons.length; i++){
-	decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id));
+	let selectType = decreaseButtons[i].parentNode.parentNode.id
+	if (selectType == "plantSelect"){
+		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, plantValues));
+	}
+	else if (selectType == "workerSelect") {
+		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, kitchenValues));
+	}
 }
 
-function increaseValue(id) {
-	if (unnassignedPlants == 0) {return}
-	plantValues[id] += 1
+function increaseValue(id, unassignedValue, assignedValue) {
+	if (unassignedValue == 0) {return}
+	assignedValue[id] += 1
 }
-function decreaseValue(id) {
-	if (plantValues[id] == 0) {return}
-	plantValues[id] -= 1
+function decreaseValue(id, assignedValue) {
+	if (assignedValue[id] == 0) {return}
+	assignedValue[id] -= 1
 }
 
 
@@ -309,9 +334,14 @@ function updateUI() {
 	// document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
 
 
-	unnassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
-	document.getElementById("availablePlants").textContent = "Available: " + unnassignedPlants + " / " + selectValues.maxPlants
+	selectUnassigned.unassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
+	selectUnassigned.unassignedWorkers = updateAvailable(kitchenValues, selectValues.maxWorkers)
+	document.getElementById("availablePlants").textContent = "Available Plants: " + selectUnassigned.unassignedPlants + " / " + selectValues.maxPlants
 	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
+
+	document.getElementById("availableWorkers").textContent = "Available Workers: " + selectUnassigned.unassignedWorkers + " / " + selectValues.maxWorkers
+	document.getElementById("doughKitchen").textContent = "Dough:  " + kitchenValues.dough
+	document.getElementById("tmtsauceKitchen").textContent = "Tomato Sauce:  " + kitchenValues.tmtSauce
 
 	updateContainerUI("gen", generators)
 	updateContainerUI("bui", buildings)
