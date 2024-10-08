@@ -8,6 +8,7 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
+import { materialOpacity } from 'three/webgpu';
 
 
 //Ready document
@@ -25,8 +26,8 @@ const renderer = new THREE.WebGLRenderer({antialias:true, canvas: document.query
 renderer.setPixelRatio(window.devicePixelRatio)
 
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 10000 );
-camera.position.set(10, 10, -10);
+const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100000 );
+
 camera.updateProjectionMatrix();
 const controls = new OrbitControls(camera, renderer.domElement)
 
@@ -68,11 +69,14 @@ const sphereMaterial = new THREE.MeshStandardMaterial({
 });
 const sphere = new THREE.Mesh( globeGeometry, sphereMaterial);
 
- const darksideMat = new THREE.MeshBasicMaterial({ 
+const darksideMat = new THREE.MeshBasicMaterial({ 
  	map: textureLoader.load('./Assets/earthuvnight.png'),
  	blending: THREE.AdditiveBlending
 
 }); 
+
+
+
 
 const darksideMesh = new THREE.Mesh(globeGeometry, darksideMat);
 
@@ -124,7 +128,7 @@ const sunGroup = new THREE.Group()
 
 const sunGeometry = new THREE.IcosahedronGeometry( 20, 50 );
 const sunMesh = new THREE.Mesh(sunGeometry, sunMat)
-const sunlight = new THREE.PointLight(0xffffff, 1000000);
+const sunlight = new THREE.PointLight(0xffffff, 10000000);
 	
 const sunAtmosphere = new THREE.Mesh( sunGeometry, atmMaterial );
 sunAtmosphere.scale.set(2, 2, 2);
@@ -142,6 +146,7 @@ const sunCurve = new THREE.EllipseCurve(
 );
 const point = sunCurve.getSpacedPoints(500)
 
+const curveMesh = new THREE.LineBasicMaterial
 
 
 
@@ -174,6 +179,35 @@ const sunOrbitSpeed = 0.00001;
 controls.target = group.position
 controls.update();
 
+
+let cameraDistance = 50;
+
+//https://www.reddit.com/r/threejs/comments/1chmjm5/making_orbitcontrols_lock_onto_an_object/
+function cameraLock() {
+	const worldPos = new THREE.Vector3();
+	group.getWorldPosition(worldPos)
+
+	const direction = new THREE.Vector3();
+	camera.getWorldDirection(direction)
+
+	const distance = 5 + cameraDistance
+
+	const targetPosition = new THREE.Vector3().copy(worldPos).add(direction.multiplyScalar(-distance));
+
+	camera.position.copy(targetPosition)
+
+	controls.target.copy(worldPos)
+
+}
+
+addEventListener("wheel", (event) => {
+
+	cameraDistance += event.deltaY;
+	cameraDistance = clamp(cameraDistance, 10, 150)
+
+});
+
+
 function animate() {
 	const time = sunOrbitSpeed * performance.now();
 	const t = (time % loopTime) / loopTime;
@@ -182,13 +216,12 @@ function animate() {
 
 	let p = sunCurve.getPoint(t);
 
-
 	group.position.x = p.x;
 	group.position.z = p.y;
 
 	group.rotation.y +=0.001;
-	
 
+	cameraLock();
 	controls.update();
 
 	resizeCanvas();
@@ -200,17 +233,7 @@ function animate() {
 requestAnimationFrame(animate);
 
 
-function getScale(i) {
-	if (i == 0) {
-		return -0
-	} 
-	else if ( i > 0) {
-		return 1
-	}
-	else {
-		return -1
-	}
-}
+
 
 // Building page 
 
