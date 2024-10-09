@@ -9,12 +9,23 @@ var totalmoney = 20000000
 
 var ingredients = [];
 
-class Ingredient {
+class t1Ingredient {
 	constructor(ing) {
 		this.name = ing.name;
 		this.total = ing.total;
 		this.cap = ing.cap;
 		this.uiID = ing.uiID;
+	}
+}
+
+class t2Ingredient {
+	constructor(ing) {
+		this.name = ing.name;
+		this.total = ing.total;
+		this.cap = ing.cap;
+		this.uiID = ing.uiID;
+		this.increase = ing.increase;
+		this.decrease = ing.decrease;
 	}
 }
 
@@ -36,9 +47,9 @@ let ingredientDefaultData = [
 ["Tomatos",0, 50, "tomatosIng"],
 ["Flour", 300, 1000, "flourIng"],
 ["Water",0,100, "waterIng"],
-["Dough",0,30, "doughIng"],
+["Dough",0,30, "doughIng", 2, [1,2]],
 ["Cheese",0,30, "cheeseIng"],
-["Tomato Sauce",0, 30, "tmtSauceIng"]
+["Tomato Sauce",0, 30, "tmtSauceIng", 2, 1]
 ]
 
 
@@ -50,15 +61,21 @@ function createIngredient(data) {
 		uiID: data[3]
 	}
 
-	
-	ingredients.push(new Ingredient(ing))
-
+	if (data.length == 6) {
+		Object.assign(ing, {increase: data[4]}, {decrease: data[5]})
+		ingredients.push(new t2Ingredient(ing))
+	}
+	else {
+		ingredients.push(new t1Ingredient(ing))
+	}
 
 }
 
 for (let i = 0; i < ingredientDefaultData.length; i++) {
 	createIngredient(ingredientDefaultData[i])
 }
+
+console.log(ingredients)
 
 //Generators//
 
@@ -347,7 +364,7 @@ function updateUI() {
 	updateContainerUI("bui", buildings)
 }
 
-console.log(plantValues.tomatos)
+console.log(ingName("Water"))
 
 var flourCheck = false
 var doughCheck = false
@@ -359,29 +376,45 @@ function productionLoop(diff){
 		flourCheck = true
 	}
 
-	ingredients[4].total += genName("Water Pump").amount * genName("Water Pump").mult * diff * 2
-	ingredients[4].total = clamp(ingredients[4].total, 0, ingredients[4].cap)
+	ingName("Water").total += (genName("Water Pump").amount * genName("Water Pump").mult * diff * 2)
+	ingName("Water").total = clamp(ingName("Water").total, 0, ingName("Water").cap)
 
 	
-	ingredients[1].total += genName("Cows").amount * genName("Cows").mult * diff * 0.5
-	ingredients[1].total = clamp(ingredients[1].total, 0, ingredients[1].cap)
-	ingredients[2].total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
+	ingName("Milk").total += genName("Cows").amount * genName("Cows").mult * diff * 0.5
+	ingName("Milk").total = clamp(ingName("Milk").total, 0, ingName("Milk").cap)
+	ingName("Tomatos").total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
 	
 	if (flourCheck == true){
-		ingredients[3].total += genName("Mill").amount * genName("Mill").mult * diff * 2;
+		ingName("Flour").total += (genName("Mill").amount * genName("Mill").mult * diff * 2);
+		ingName("Flour").total = clamp(ingName("Flour").total, 0, ingName("Flour").cap)
 		flourCheck = false
 	}
 
-	if (ingredients[3].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]) && ingredients[4].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1])){
-		ingredients[3].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]
-		ingredients[4].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1]
-		doughCheck = true;
+	if (ingName("Flour").total >= (ingName("Dough").decrease[0] * kitchenValues.dough) && ingName("Water").total >= (ingName("Dough").decrease[1] * kitchenValues.dough)){
+		ingName("Flour").total -= ingName("Dough").decrease[0] * kitchenValues.dough
+		ingName("Water").total -= ingName("Dough").decrease[1] * kitchenValues.dough
+		doughCheck = true
 	}
 
 	if (doughCheck == true) {
-		ingredients[5].total += genName("Dough Mixer").amount * genName("Dough Mixer").increase * genName("Dough Mixer").mult;
-		doughCheck = false;
+		ingName("Dough").total += kitchenValues.dough * buildingName("Kitchen").mult * diff;
+		ingName("Dough").total = clamp(ingName("Dough").total, 0, ingName("Dough").cap)
+		doughCheck = false
 	}
+
+
+
+	// if (ingredients[3].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]) && ingredients[4].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1])){
+	// 	ingredients[3].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]
+	// 	ingredients[4].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1]
+	// 	doughCheck = true;
+	// }
+
+	// if (doughCheck == true) {
+	// 	ingredients[5].total += genName("Dough Mixer").amount * genName("Dough Mixer").increase * genName("Dough Mixer").mult;
+		
+	// 	doughCheck = false;
+	// }
 
 	
 }
