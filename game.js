@@ -40,16 +40,16 @@ function updateIngredientUI(ing) {
 	document.getElementById(ing.uiID).textContent = ing.name + ": " + ((ing.total).toFixed(2)) + " / " + ((ing.cap).toFixed(2));
 }
 
-//Name, Total, Cap, UI ID
+//Name, Total, Cap, UI ID, Increase, Decrease
 let ingredientDefaultData = [
 ["Wheat", 500, 2000, "wheatIng"],
 ["Milk",0,50, "milkIng"],
 ["Tomatos",0, 50, "tomatosIng"],
 ["Flour", 300, 1000, "flourIng"],
 ["Water",0,100, "waterIng"],
-["Dough",0,30, "doughIng", 2, [1,2]],
+["Dough",0,30, "doughIng", 2, [1,2], ["Flour","Water"]],
 ["Cheese",0,30, "cheeseIng"],
-["Tomato Sauce",0, 30, "tmtSauceIng", 2, 1]
+["Tomato Sauce",0, 30, "tmtSauceIng", 2, [1],["Tomatos"]]
 ]
 
 
@@ -58,7 +58,7 @@ function createIngredient(data) {
 		name: data[0],
 		total: data[1],
 		cap: data[2],
-		uiID: data[3]
+		uiID: data[3],
 	}
 
 	if (data.length == 6) {
@@ -85,9 +85,11 @@ class t1Generator {
 	constructor(gen) {
 		this.id = gen.id;
 		this.name = gen.name;
+		this.value = gen.value;
 		this.cost = gen.cost;
 		this.amount = gen.amount;
 		this.mult = gen.mult;
+		this.prodType = gen.prodType;
 	}
 
 }
@@ -96,11 +98,14 @@ class t2Generator {
 	constructor(gen) {
 		this.id = gen.id;
 		this.name = gen.name;
+		this.value = gen.value;
 		this.cost = gen.cost;
 		this.amount = gen.amount;
 		this.mult = gen.mult;
+		this.prodType = gen.prodType;
 		this.increase = gen.increase;
 		this.decrease = gen.decrease;
+		this.dcrsVals = gen.dcrsVals;
 	}
 }
 
@@ -122,13 +127,13 @@ function buyGenerator(i) {
 	g.cost *= 1.5
 }
 
-//ID, Name, Cost, Amount, Mult, Increase, Decrease
+//ID, Name, Value, Cost, Amount, Mult, Production Type, Increase, Decrease
 let generatorDefaultData = [
-[1,"Wheat Field", Math.pow(Math.pow(25,1), 1), 1, 2],
-[2,"Cows", Math.pow(Math.pow(50,1), 1), 0, 1],
-[3,"Mill", Math.pow(Math.pow(50,1), 1), 0, 1, 2, 1],
-[4,"Water Pump", Math.pow(Math.pow(50,1), 1), 1, 10],
-[5,"Dough Mixer", Math.pow(Math.pow(50,1), 1), 0, 1, 10, [300,100]]
+[1,"Wheat Field","Wheat", Math.pow(Math.pow(25,1), 1), 1, 2, "stnd"],
+[2,"Cows","Milk", Math.pow(Math.pow(50,1), 1), 0, 1, "stnd"],
+[3,"Mill","Flour", Math.pow(Math.pow(50,1), 1), 0, 1,"dcrs", 2, [1], ["Wheat"]],
+[4,"Water Pump","Water", Math.pow(Math.pow(50,1), 1), 1, 10, "stnd"],
+[5,"Cheese Factory","Cheese", Math.pow(Math.pow(50,1), 1), 0, 1, "dcrs", 1, [2], ["Milk"]]
 ]
 
 
@@ -137,12 +142,14 @@ function createGenerators(data) {
 	const gen = {
 		id: data[0],
 		name: data[1],
-		cost: data[2],
-	 	amount: data[3],
-		mult: data[4],
+		value: data[2],
+		cost: data[3],
+	 	amount: data[4],
+		mult: data[5],
+		prodType: data[6]
 	}
-	if (data.length == 7) {
-		Object.assign(gen, {increase: data[5]}, {decrease: data[6]})
+	if (data.length == 10) {
+		Object.assign(gen, {increase: data[7]}, {decrease: data[8]}, {dcrsVals: data[9]})
 		generators.push(new t2Generator(gen))
 	}
 	else {
@@ -182,9 +189,9 @@ function buyBuilding(i) {
 	if (b.cost > totalmoney) return
 	totalmoney -= b.cost
 	b.amount += 1
-	selectValues[b.value] += b.increase
+	selectMaxValues[b.value] += b.increase
 	b.cost *= 1.5
-	console.log(selectValues.maxPlants)
+	console.log(selectMaxValues.maxPlants)
 }
 
 function buildingName(name) {
@@ -254,8 +261,7 @@ function updateContainerUI(type, objects) {
 }
 
 
-
-let selectValues = {
+let selectMaxValues = {
 	maxPlants: 0,
 	maxWorkers: 1,
 }
@@ -265,20 +271,24 @@ let selectUnassigned = {
 	unassignedWorkers: 0
 }
 
+let selectValues = []
 
 let plantValues = {
 	tomatos: 0
 }
+
+selectValues.push(plantValues)
 
 let kitchenValues = {
 	dough: 0,
 	tmtSauce: 0
 }
 
+selectValues.push(kitchenValues)
+
 const increaseButtons = document.getElementsByClassName("increaseBtn")
 const decreaseButtons = document.getElementsByClassName("decreaseBtn")
 
-console.log(increaseButtons)
 
 for (let i = 0; i < increaseButtons.length; i++){
 	let selectType = increaseButtons[i].parentNode.parentNode.id
@@ -351,12 +361,12 @@ function updateUI() {
 	// document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
 
 
-	selectUnassigned.unassignedPlants = updateAvailable(plantValues, selectValues.maxPlants)
-	selectUnassigned.unassignedWorkers = updateAvailable(kitchenValues, selectValues.maxWorkers)
-	document.getElementById("availablePlants").textContent = "Available Plants: " + selectUnassigned.unassignedPlants + " / " + selectValues.maxPlants
+	selectUnassigned.unassignedPlants = updateAvailable(plantValues, selectMaxValues.maxPlants)
+	selectUnassigned.unassignedWorkers = updateAvailable(kitchenValues, selectMaxValues.maxWorkers)
+	document.getElementById("availablePlants").textContent = "Available Plants: " + selectUnassigned.unassignedPlants + " / " + selectMaxValues.maxPlants
 	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
 
-	document.getElementById("availableWorkers").textContent = "Available Workers: " + selectUnassigned.unassignedWorkers + " / " + selectValues.maxWorkers
+	document.getElementById("availableWorkers").textContent = "Available Workers: " + selectUnassigned.unassignedWorkers + " / " + selectMaxValues.maxWorkers
 	document.getElementById("doughKitchen").textContent = "Dough:  " + kitchenValues.dough
 	document.getElementById("tmtsauceKitchen").textContent = "Tomato Sauce:  " + kitchenValues.tmtSauce
 
@@ -369,26 +379,48 @@ console.log(ingName("Water"))
 var flourCheck = false
 var doughCheck = false
 
+function standardProduction(value, gen, diff) {
+	ingName(value).total += genName(gen).amount * genName(gen).mult * diff
+	ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap) 
+}
+
+
+
+function decreaseProduction(value, gen, diff, decreaseVals) {
+	for (let i = 0; i < decreaseVals.length; i++) {
+		if (ingName(value).total < (ingName(decreaseVals[i]).amount * genName(gen).decrease[i])){
+			return
+		}
+	}
+
+	for (let i = 0; i < decreaseVals.length; i++) {
+		ingName(decreaseVals[i]).total -= (genName(gen).amount * genName(gen).decrease)
+		ingName(decreaseVals[i]).total = clamp(ingName(decreaseVals[i]).total, 0 , ingName(decreaseVals[i]).cap)
+	}
+
+	ingName(value).total += (genName(gen).amount * genName(gen).mult * diff)
+	ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap) 
+	
+
+}
+
+function selectProduction(){
+
+}
+
 function productionLoop(diff){
-	ingredients[0].total += genName("Wheat Field").amount * genName("Wheat Field").mult * diff * 2
-	if (ingredients[0].total > (genName("Mill").amount * genName("Mill").decrease)){
-		ingredients[0].total -= (genName("Mill").amount * genName("Mill").decrease)
-		flourCheck = true
+
+	for (let i = 0; i < generators.length; i++) {
+		
+		if (generators[i].prodType == "stnd") {
+			standardProduction(generators[i].value, generators[i].name, diff)
+		}
+		else if (generators[i].prodType == "dcrs") {
+			decreaseProduction(generators[i].value, generators[i].name, diff, generators[i].dcrsVals)
+		}
 	}
 
-	ingName("Water").total += (genName("Water Pump").amount * genName("Water Pump").mult * diff * 2)
-	ingName("Water").total = clamp(ingName("Water").total, 0, ingName("Water").cap)
-
-	
-	ingName("Milk").total += genName("Cows").amount * genName("Cows").mult * diff * 0.5
-	ingName("Milk").total = clamp(ingName("Milk").total, 0, ingName("Milk").cap)
 	ingName("Tomatos").total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
-	
-	if (flourCheck == true){
-		ingName("Flour").total += (genName("Mill").amount * genName("Mill").mult * diff * 2);
-		ingName("Flour").total = clamp(ingName("Flour").total, 0, ingName("Flour").cap)
-		flourCheck = false
-	}
 
 	if (ingName("Flour").total >= (ingName("Dough").decrease[0] * kitchenValues.dough) && ingName("Water").total >= (ingName("Dough").decrease[1] * kitchenValues.dough)){
 		ingName("Flour").total -= ingName("Dough").decrease[0] * kitchenValues.dough
@@ -404,18 +436,6 @@ function productionLoop(diff){
 
 
 
-	// if (ingredients[3].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]) && ingredients[4].total >= (genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1])){
-	// 	ingredients[3].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[0]
-	// 	ingredients[4].total -= genName("Dough Mixer").amount * genName("Dough Mixer").decrease[1]
-	// 	doughCheck = true;
-	// }
-
-	// if (doughCheck == true) {
-	// 	ingredients[5].total += genName("Dough Mixer").amount * genName("Dough Mixer").increase * genName("Dough Mixer").mult;
-		
-	// 	doughCheck = false;
-	// }
-
 	
 }
 
@@ -428,7 +448,6 @@ function productionLoop(diff){
 
 function mainLoop() {
 	var diff = (Date.now() - lastUpdate) / 1000
-
 	productionLoop(diff)
 	updateUI()
 	
