@@ -209,7 +209,7 @@ function animate() {
 	group.position.x = p.x;
 	group.position.z = p.y;
 
-	group.rotation.y +=0.001;
+	group.rotation.y +=0.002;
 
 	cameraLock();
 	controls.update();
