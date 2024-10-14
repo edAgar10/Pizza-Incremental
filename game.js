@@ -26,6 +26,7 @@ class t2Ingredient {
 		this.uiID = ing.uiID;
 		this.increase = ing.increase;
 		this.decrease = ing.decrease;
+		this.decreaseVals = ing.decreaseVals;
 	}
 }
 
@@ -60,9 +61,8 @@ function createIngredient(data) {
 		cap: data[2],
 		uiID: data[3],
 	}
-
-	if (data.length == 6) {
-		Object.assign(ing, {increase: data[4]}, {decrease: data[5]})
+	if (data.length == 7) {
+		Object.assign(ing, {increase: data[4]}, {decrease: data[5]}, {decreaseVals: data[6]})
 		ingredients.push(new t2Ingredient(ing))
 	}
 	else {
@@ -189,9 +189,10 @@ function buyBuilding(i) {
 	if (b.cost > totalmoney) return
 	totalmoney -= b.cost
 	b.amount += 1
-	selectMaxValues[b.value] += b.increase
+	selects[b.value].max += b.increase
 	b.cost *= 1.5
-	console.log(selectMaxValues.maxPlants)
+
+	selects[b.value] = updateSelectValues(selects[b.value])
 }
 
 function buildingName(name) {
@@ -202,8 +203,8 @@ function buildingName(name) {
 }
 
 let buildingDefaultData = [
-[1,"Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1, ("maxPlants")],
-[2, "Kitchen", Math.pow(Math.pow(100,1), 1), 1, 1, 1, ("maxWorkers")]
+[1,"Vegetable Patch", Math.pow(Math.pow(50,1), 1), 0, 1, 1,0],
+[2, "Kitchen", Math.pow(Math.pow(100,1), 1), 1, 1, 1 ,1]
 ]
 
 function createBuilding(data) {
@@ -260,31 +261,45 @@ function updateContainerUI(type, objects) {
 	
 }
 
+var selects = []
 
-let selectMaxValues = {
-	maxPlants: 0,
-	maxWorkers: 1,
+class Select {
+	constructor(slct) {
+		this.title = slct.title;
+		this.max = slct.max;
+		this.unassigned = slct.unassigned;
+		this.names = slct.names;
+		this.values = slct.values;
+	}
+
 }
 
-let selectUnassigned = {
-	unassignedPlants: 0,
-	unassignedWorkers: 0
-}
+let selectDefaultData = [
+	["Plants", 0, 0, ["Tomatos"], [0]],
+	["Kitchen", 0, 0, ["Dough", "Tomato Sauce"], [0,0]]
+	]
+	
+	function createSelect(data) {
+		const ing = {
+			title: data[0],
+			max: data[1],
+			unassigned:  data[2],
+			names:  data[3],
+			values:  data[4]
+		}
+		
+		selects.push(new Select(ing))
+	
+	
+	}
+	
+	
+	for (let i = 0; i < selectDefaultData.length; i++) {
+		createSelect(selectDefaultData[i])
+	}
 
-let selectValues = []
+	console.log(selects)
 
-let plantValues = {
-	tomatos: 0
-}
-
-selectValues.push(plantValues)
-
-let kitchenValues = {
-	dough: 0,
-	tmtSauce: 0
-}
-
-selectValues.push(kitchenValues)
 
 const increaseButtons = document.getElementsByClassName("increaseBtn")
 const decreaseButtons = document.getElementsByClassName("decreaseBtn")
@@ -293,10 +308,10 @@ const decreaseButtons = document.getElementsByClassName("decreaseBtn")
 for (let i = 0; i < increaseButtons.length; i++){
 	let selectType = increaseButtons[i].parentNode.parentNode.id
 	if (selectType == "plantSelect"){
-		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id, selectUnassigned.unassignedPlants, plantValues));
+		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id,0));
 	}
 	else if (selectType == "workerSelect") {
-		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id, selectUnassigned.unassignedWorkers, kitchenValues));
+		increaseButtons[i].addEventListener("click", () => increaseValue(increaseButtons[i].parentNode.id,1));
 	}
 	
 }
@@ -304,22 +319,56 @@ for (let i = 0; i < increaseButtons.length; i++){
 for (let i = 0; i < decreaseButtons.length; i++){
 	let selectType = decreaseButtons[i].parentNode.parentNode.id
 	if (selectType == "plantSelect"){
-		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, plantValues));
+		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, 0));
 	}
 	else if (selectType == "workerSelect") {
-		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, kitchenValues));
+		decreaseButtons[i].addEventListener("click", () => decreaseValue(decreaseButtons[i].parentNode.id, 1));
 	}
 }
 
-function increaseValue(id, unassignedValue, assignedValue) {
-	if (unassignedValue == 0) {return}
-	assignedValue[id] += 1
+function increaseValue(domID, slctID) {
+
+	if (selects[slctID].unassigned == 0) {return}
+
+	let index = domID.replace(selects[slctID].title, "")
+	selects[slctID].values[index] += 1
+	selects[slctID] = updateSelectValues(selects[slctID])
 }
-function decreaseValue(id, assignedValue) {
-	if (assignedValue[id] == 0) {return}
-	assignedValue[id] -= 1
+function decreaseValue(domID, slctID) {
+
+	let index = domID.replace(selects[slctID].title, "")
+	if (selects[slctID].values[index] == 0) {return}
+
+	selects[slctID].values[index] -= 1
+	selects[slctID] = updateSelectValues(selects[slctID])
+
 }
 
+function updateAvailable(values, max) {
+	var result = max;
+	for (let i = 0; i < values.length; i++) {
+		result -= values[i];
+	}
+	return result
+	
+}
+
+function updateSelectValues(slct) {
+	slct.unassigned = updateAvailable(slct.values, slct.max)
+	document.getElementById("available" + slct.title).textContent = "Available " + slct.title + ": " + slct.unassigned + " / " + slct.max
+
+	for (let i = 0; i < slct.names.length; i++) {
+		let id = slct.names[i] + "Select"
+		document.getElementById(id).textContent = slct.names[i] + ":  " + slct.values[i]
+	}
+
+	return slct
+}
+
+
+for (let i = 0; i < selects.length; i++) {
+	updateSelectValues(selects[i])
+}
 
 function format(amount) {
 	let power = Math.floor(Math.log10(amount))
@@ -329,18 +378,6 @@ function format(amount) {
 	
 }
 
-
-function updateAvailable(values, max) {
-	var result = max;
-	for (const [key, value] of Object.entries(values)) {
-		result -= value;
-	}
-	return result
-}
-
-
-
-
 function updateUI() {
 
 	document.getElementById("money").textContent = "Money: £" + format(totalmoney);
@@ -349,35 +386,12 @@ function updateUI() {
 		updateIngredientUI(ingredients[i])
 	}
 
-	
-
-	// document.getElementById("flourIng").textContent = "Flour: " + format(ingName("flour").total) + "g";
-	// document.getElementById("waterIng").textContent = "Water: " + (ingName("water").total).toFixed(2) + " / " + (ingName("water").cap).toFixed(2) + "l";
-
-	// document.getElementById("wheatIng").textContent = "Wheat: " + format(ingName("wheat").total);
-	// document.getElementById("milkIng").textContent = "Milk: " + (ingName("milk").total).toFixed(2) + " / " + (ingName("milk").cap).toFixed(2) + "l";
-	// document.getElementById("tomatosIng").textContent = "Tomatos: " + (ingName("tomatos").total).toFixed(0);
-
-	// document.getElementById("doughIng").textContent = "Dough: " + format(ingName("dough").total) + " / " + (ingName("dough").cap).toFixed(2);
-
-
-	selectUnassigned.unassignedPlants = updateAvailable(plantValues, selectMaxValues.maxPlants)
-	selectUnassigned.unassignedWorkers = updateAvailable(kitchenValues, selectMaxValues.maxWorkers)
-	document.getElementById("availablePlants").textContent = "Available Plants: " + selectUnassigned.unassignedPlants + " / " + selectMaxValues.maxPlants
-	document.getElementById("tomatoPlants").textContent = "Tomatos:  " + plantValues.tomatos
-
-	document.getElementById("availableWorkers").textContent = "Available Workers: " + selectUnassigned.unassignedWorkers + " / " + selectMaxValues.maxWorkers
-	document.getElementById("doughKitchen").textContent = "Dough:  " + kitchenValues.dough
-	document.getElementById("tmtsauceKitchen").textContent = "Tomato Sauce:  " + kitchenValues.tmtSauce
 
 	updateContainerUI("gen", generators)
 	updateContainerUI("bui", buildings)
 }
 
-console.log(ingName("Water"))
 
-var flourCheck = false
-var doughCheck = false
 
 function standardProduction(value, gen, diff) {
 	ingName(value).total += genName(gen).amount * genName(gen).mult * diff
@@ -404,7 +418,14 @@ function decreaseProduction(value, gen, diff, decreaseVals) {
 
 }
 
-function selectProduction(){
+function selectProduction(buil, diff){
+
+	for (let i = 0; i < selects[buil.value].values.length; i++) {
+		if (Object.keys(ingName(selects[buil.value].names[i])).length == 4){
+			ingName(selects[buil.value].names[i]).total += selects[buil.value].values[i] * buil.mult * diff;
+		}
+		
+	}
 
 }
 
@@ -420,19 +441,24 @@ function productionLoop(diff){
 		}
 	}
 
-	ingName("Tomatos").total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
-
-	if (ingName("Flour").total >= (ingName("Dough").decrease[0] * kitchenValues.dough) && ingName("Water").total >= (ingName("Dough").decrease[1] * kitchenValues.dough)){
-		ingName("Flour").total -= ingName("Dough").decrease[0] * kitchenValues.dough
-		ingName("Water").total -= ingName("Dough").decrease[1] * kitchenValues.dough
-		doughCheck = true
+	for (let i = 0; i < buildings.length; i++) {
+		selectProduction(buildings[i], diff)
 	}
 
-	if (doughCheck == true) {
-		ingName("Dough").total += kitchenValues.dough * buildingName("Kitchen").mult * diff;
-		ingName("Dough").total = clamp(ingName("Dough").total, 0, ingName("Dough").cap)
-		doughCheck = false
-	}
+
+	// ingName("Tomatos").total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
+
+	// if (ingName("Flour").total >= (ingName("Dough").decrease[0] * kitchenValues.dough) && ingName("Water").total >= (ingName("Dough").decrease[1] * kitchenValues.dough)){
+	// 	ingName("Flour").total -= ingName("Dough").decrease[0] * kitchenValues.dough
+	// 	ingName("Water").total -= ingName("Dough").decrease[1] * kitchenValues.dough
+	// 	doughCheck = true
+	// }
+
+	// if (doughCheck == true) {
+	// 	ingName("Dough").total += kitchenValues.dough * buildingName("Kitchen").mult * diff;
+	// 	ingName("Dough").total = clamp(ingName("Dough").total, 0, ingName("Dough").cap)
+	// 	doughCheck = false
+	// }
 
 
 
