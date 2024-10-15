@@ -1,5 +1,6 @@
 import { KeyframeTrack } from "three"
 import { clamp } from "three/src/math/MathUtils.js"
+import { triNoise3D } from "three/webgpu";
 
 var lastUpdate = Date.now()
 
@@ -402,7 +403,7 @@ function standardProduction(value, gen, diff) {
 
 function decreaseProduction(value, gen, diff, decreaseVals) {
 	for (let i = 0; i < decreaseVals.length; i++) {
-		if (ingName(value).total < (ingName(decreaseVals[i]).amount * genName(gen).decrease[i])){
+		if (ingName(value).total < (genName(gen).amount * genName(gen).decrease[i])){
 			return
 		}
 	}
@@ -418,14 +419,36 @@ function decreaseProduction(value, gen, diff, decreaseVals) {
 
 }
 
-function selectProduction(buil, diff){
+function selectProduction(buil, diff, currentSelect, i){
+	
 
-	for (let i = 0; i < selects[buil.value].values.length; i++) {
-		if (Object.keys(ingName(selects[buil.value].names[i])).length == 4){
-			ingName(selects[buil.value].names[i]).total += selects[buil.value].values[i] * buil.mult * diff;
+	if (Object.keys(ingName(currentSelect.names[i])).length < 5){
+		ingName(currentSelect.names).total += currentSelect.values[i] * buil.mult * diff;
+		ingName(currentSelect.names).total = clamp(ingName(currentSelect.names[i]).total, 0, ingName(currentSelect.names[i]).cap)
+	}
+	else {
+		let dcrsVals = ingName(currentSelect.names[i]).decreaseVals
+		let decreaseAmnt = dcrsVals.length
+
+		for (let y = 0; y < decreaseAmnt; y++) {
+			if (ingName(dcrsVals[y]).total < currentSelect.values[i] * ingName(currentSelect.names[i]).decrease[y]) {
+				return
+			}
 		}
 		
+		for (let y = 0; y < decreaseAmnt; y++) {
+			ingName(dcrsVals[y]).total -= currentSelect.values[i] * ingName(currentSelect.names[i]).decrease[y]
+			ingName(dcrsVals[y]).total = clamp(ingName(dcrsVals[y]).total, 0 , ingName(dcrsVals[y]).cap)
+		}
+		
+		ingName(currentSelect.names[i]).total += currentSelect.values[i] * buil.mult * diff;
+		ingName(currentSelect.names[i]).total = clamp(ingName(currentSelect.names[i]).total, 0, ingName(currentSelect.names[i]).cap)
+
+
+
+
 	}
+
 
 }
 
@@ -442,7 +465,10 @@ function productionLoop(diff){
 	}
 
 	for (let i = 0; i < buildings.length; i++) {
-		selectProduction(buildings[i], diff)
+		let currentSelect = selects[buildings[i].value]
+		for (let y = 0; y < currentSelect.values.length; y++) {
+			selectProduction(buildings[i], diff, currentSelect, y)
+		}
 	}
 
 
