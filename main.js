@@ -16,6 +16,8 @@ import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
 $(document).ready(function() {
 	$("#buildingPage").hide();
 	$("#ordersPage").hide();
+	// $("#resourceSection").hide();
+	// $("#generatorSection").hide();
 });
 
 const textureLoader = new THREE.TextureLoader();
@@ -89,10 +91,10 @@ const starGeometry = new THREE.BufferGeometry()
 const starMaterial = new THREE.PointsMaterial({color: 0xffffff})
 
 const starVertices = []
-for (let i = 0; i < 10000; i++) {
-	const x = (Math.random() - 0.5) * 2000
-	const y = (Math.random() - 0.5) * 2000
-	const z = (Math.random() - 0.5) * 2000
+for (let i = 0; i < 20000; i++) {
+	const x = (Math.random() - 0.5) * 30000
+	const y = (Math.random() - 0.5) * 30000
+	const z = (Math.random() - 0.5) * 30000
 	starVertices.push(x, y, z)
 }
 starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3))
@@ -257,7 +259,7 @@ function changeTab(tabName) {
 }
 
 
-//Resource Page
+//Resource Page GUI
 
 const resourceLists = [document.getElementById("mainIngList"), document.getElementById("sideIngList"), document.getElementById("farmIngList")]
 
@@ -270,4 +272,12 @@ $(".dropdownButton").on("click", function() {
 			$(resourceLists[i]).slideToggle(1000);
 		}
 	}
+});
+
+//World Page GUI
+
+$("#worldFullscreen").on("click", function() {
+	$("#resourceSection").slideToggle(0)
+	$("#generatorSection").slideToggle(0)
+
 });
