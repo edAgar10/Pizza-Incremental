@@ -42,15 +42,15 @@ function updateIngredientUI(ing) {
 	document.getElementById(ing.uiID).textContent = ing.name + ": " + ((ing.total).toFixed(2)) + " / " + ((ing.cap).toFixed(2));
 }
 
-//Name, Total, Cap, UI ID, Increase, Decrease
+//Name, Total, Cap, UI ID, Increase, Decrease, decrease values
 let ingredientDefaultData = [
 ["Wheat", 500, 2000, "wheatIng"],
 ["Milk",0,50, "milkIng"],
 ["Tomatos",0, 50, "tomatosIng"],
-["Flour", 300, 1000, "flourIng"],
+["Flour", 300, 1000, "flourIng", 5, [10], ["Wheat"]],
 ["Water",0,100, "waterIng"],
 ["Dough",0,30, "doughIng", 2, [1,2], ["Flour","Water"]],
-["Cheese",0,30, "cheeseIng"],
+["Cheese",0,30, "cheeseIng", 1, [5],["Milk"]],
 ["Tomato Sauce",0, 30, "tmtSauceIng", 2, [1],["Tomatos"]]
 ]
 
@@ -394,58 +394,30 @@ function updateUI() {
 
 
 
-function standardProduction(value, gen, diff) {
-	ingName(value).total += genName(gen).amount * genName(gen).mult * diff
-	ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap) 
-}
-
-
-
-function decreaseProduction(value, gen, diff, decreaseVals) {
-	for (let i = 0; i < decreaseVals.length; i++) {
-		if (ingName(value).total < (genName(gen).amount * genName(gen).decrease[i])){
-			return
-		}
-	}
-
-	for (let i = 0; i < decreaseVals.length; i++) {
-		ingName(decreaseVals[i]).total -= (genName(gen).amount * genName(gen).decrease)
-		ingName(decreaseVals[i]).total = clamp(ingName(decreaseVals[i]).total, 0 , ingName(decreaseVals[i]).cap)
-	}
-
-	ingName(value).total += (genName(gen).amount * genName(gen).mult * diff)
-	ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap) 
+function selectProduction(value, amount, mult, diff){
 	
 
-}
-
-function selectProduction(buil, diff, currentSelect, i){
-	
-
-	if (Object.keys(ingName(currentSelect.names[i])).length < 5){
-		ingName(currentSelect.names).total += currentSelect.values[i] * buil.mult * diff;
-		ingName(currentSelect.names).total = clamp(ingName(currentSelect.names[i]).total, 0, ingName(currentSelect.names[i]).cap)
+	if (Object.keys(ingName(value)).length < 5){
+		ingName(value).total += amount * mult * diff;
+		ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap)
 	}
 	else {
-		let dcrsVals = ingName(currentSelect.names[i]).decreaseVals
+		let dcrsVals = ingName(value).decreaseVals
 		let decreaseAmnt = dcrsVals.length
 
-		for (let y = 0; y < decreaseAmnt; y++) {
-			if (ingName(dcrsVals[y]).total < currentSelect.values[i] * ingName(currentSelect.names[i]).decrease[y]) {
+		for (let i = 0; i < decreaseAmnt; i++) {
+			if (ingName(dcrsVals[i]).total < amount * ingName(value).decrease[i]) {
 				return
 			}
 		}
 		
-		for (let y = 0; y < decreaseAmnt; y++) {
-			ingName(dcrsVals[y]).total -= currentSelect.values[i] * ingName(currentSelect.names[i]).decrease[y]
-			ingName(dcrsVals[y]).total = clamp(ingName(dcrsVals[y]).total, 0 , ingName(dcrsVals[y]).cap)
+		for (let i = 0; i < decreaseAmnt; i++) {
+			ingName(dcrsVals[i]).total -= amount * ingName(value).decrease[i]
+			ingName(dcrsVals[i]).total = clamp(ingName(dcrsVals[i]).total, 0 , ingName(dcrsVals[i]).cap)
 		}
 		
-		ingName(currentSelect.names[i]).total += currentSelect.values[i] * buil.mult * diff;
-		ingName(currentSelect.names[i]).total = clamp(ingName(currentSelect.names[i]).total, 0, ingName(currentSelect.names[i]).cap)
-
-
-
+		ingName(value).total += (ingName(value).increase * amount) * mult * diff;
+		ingName(value).total = clamp(ingName(value).total, 0, ingName(value).cap)
 
 	}
 
@@ -455,47 +427,19 @@ function selectProduction(buil, diff, currentSelect, i){
 function productionLoop(diff){
 
 	for (let i = 0; i < generators.length; i++) {
-		
-		if (generators[i].prodType == "stnd") {
-			standardProduction(generators[i].value, generators[i].name, diff)
-		}
-		else if (generators[i].prodType == "dcrs") {
-			decreaseProduction(generators[i].value, generators[i].name, diff, generators[i].dcrsVals)
-		}
+		selectProduction(generators[i].value, generators[i].amount, generators[i].mult, diff)
 	}
 
 	for (let i = 0; i < buildings.length; i++) {
 		let currentSelect = selects[buildings[i].value]
 		for (let y = 0; y < currentSelect.values.length; y++) {
-			selectProduction(buildings[i], diff, currentSelect, y)
+			selectProduction(currentSelect.names[y], currentSelect.values[y], buildings[i].mult, diff)
 		}
 	}
 
 
-	// ingName("Tomatos").total += plantValues.tomatos * buildingName("Vegetable Patch").mult * diff;
-
-	// if (ingName("Flour").total >= (ingName("Dough").decrease[0] * kitchenValues.dough) && ingName("Water").total >= (ingName("Dough").decrease[1] * kitchenValues.dough)){
-	// 	ingName("Flour").total -= ingName("Dough").decrease[0] * kitchenValues.dough
-	// 	ingName("Water").total -= ingName("Dough").decrease[1] * kitchenValues.dough
-	// 	doughCheck = true
-	// }
-
-	// if (doughCheck == true) {
-	// 	ingName("Dough").total += kitchenValues.dough * buildingName("Kitchen").mult * diff;
-	// 	ingName("Dough").total = clamp(ingName("Dough").total, 0, ingName("Dough").cap)
-	// 	doughCheck = false
-	// }
-
-
-
 	
 }
-
-
-
-
-
-
 
 
 function mainLoop() {
