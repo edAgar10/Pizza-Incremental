@@ -254,6 +254,7 @@ p1 {
 /* World Buttons */
 
 .worldButton {
+	cursor: pointer;
 	position:absolute;
 	padding: 10px;
 	margin: 10px;
