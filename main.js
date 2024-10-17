@@ -8,6 +8,7 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
+import { mx_bilerp_0 } from 'three/src/nodes/materialx/lib/mx_noise.js';
 
 
 
@@ -84,7 +85,7 @@ group.add(atmosphere)
 group.add(sphere)
 group.add(darksideMesh)
 
-scene.add(group)
+
 
 
 const starGeometry = new THREE.BufferGeometry()
@@ -112,7 +113,7 @@ const sunGroup = new THREE.Group()
 
 const sunGeometry = new THREE.IcosahedronGeometry( 20, 50 );
 const sunMesh = new THREE.Mesh(sunGeometry, sunMat)
-const sunlight = new THREE.PointLight(0xffffff, 10000000);
+const sunlight = new THREE.PointLight(0xffffff, 1000000);
 	
 const sunAtmosphere = new THREE.Mesh( sunGeometry, atmMaterial );
 sunAtmosphere.scale.set(2, 2, 2);
@@ -128,9 +129,48 @@ const sunCurve = new THREE.EllipseCurve(
 	500, 500,
 	0, 2 * Math.PI, false
 );
-const point = sunCurve.getSpacedPoints(500)
 
-const curveMesh = new THREE.LineBasicMaterial
+const linePoints = sunCurve.getSpacedPoints(200)
+
+for (let i = 0; i < linePoints.length; i++) {
+	linePoints[i].z = linePoints[i].y
+	linePoints[i].y = 0
+}
+
+const lineMat = new THREE.PointsMaterial({color:0xffffff, size: 0.5, transparent:true, opacity: 0.4});
+const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
+const curveMesh = new THREE.Points(lineGeo, lineMat);
+scene.add(curveMesh)
+
+const moonMaterial = new THREE.MeshStandardMaterial({
+	map: textureLoader.load('./Assets/moon.jpg'),
+	emissiveIntensity: 0
+});
+const moonGeometry = new THREE.IcosahedronGeometry( 1, 50 );
+const moon = new THREE.Mesh( moonGeometry, moonMaterial);
+
+scene.add(moon)
+
+let moonOrbit = new THREE.EllipseCurve(
+	0, 0,
+	20, 20,
+	0, 2 * Math.PI, false, 0.0890118
+);
+
+const moonPoints = moonOrbit.getSpacedPoints(200)
+
+for (let i = 0; i < moonPoints.length; i++) {
+	moonPoints[i].z = moonPoints[i].y
+	moonPoints[i].y = 0
+}
+
+
+const moonLineGeo = new THREE.BufferGeometry().setFromPoints(moonPoints);
+const moonLineMesh = new THREE.Points(moonLineGeo, lineMat);
+// group.add(moonLineMesh)
+
+
+scene.add(group)
 
 
 
@@ -148,12 +188,12 @@ function resizeCanvas() {
 }
 
 
+
 function clamp(num, min, max){
 	return Math.min(Math.max(num, min), max);
 }
 
-const loopTime = 1;
-const sunOrbitSpeed = 0.00001;
+
 
 // var dir = new THREE.Vector3();
 // var sunPosition = sunlight.position;
@@ -199,10 +239,16 @@ addEventListener("wheel", (event) => {
 
 });
 
+function getTime(speed,loopTime) {
+	return ((speed*performance.now()) % loopTime ) / loopTime;
+}
+
+const loopTime = 1;
+const sunOrbitSpeed = 0.00001;
+const moonOrbitSpeed = 0.00002;
 
 function animate() {
-	const time = sunOrbitSpeed * performance.now();
-	const t = (time % loopTime) / loopTime;
+	let t = getTime(sunOrbitSpeed, loopTime);
 
 	
 
@@ -212,6 +258,19 @@ function animate() {
 	group.position.z = p.y;
 
 	group.rotation.y +=0.002;
+
+	moonOrbit = new THREE.EllipseCurve(
+		group.position.x, group.position.z,
+		20, 20,
+		0, 2 * Math.PI, false, 0.0890118
+	);
+
+	t = getTime(moonOrbitSpeed, 1)
+
+	p = moonOrbit.getPoint(t)
+
+	moon.position.x = p.x
+	moon.position.z = p.y;
 
 	cameraLock();
 	controls.update();
