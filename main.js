@@ -37,7 +37,7 @@ const controls = new OrbitControls(camera, renderer.domElement)
 
 controls.autoRotate = false;
 controls.maxDistance = 100;
-controls.minDistance = 10;
+controls.minDistance = 1;
 controls.minTargetRadius = 10;
 
 
@@ -64,9 +64,8 @@ const darksideMat = new THREE.MeshBasicMaterial({
 
 
 const darksideMesh = new THREE.Mesh(globeGeometry, darksideMat);
-
-const sphereBorder = new THREE.Mesh(globeGeometry, 
-new THREE.ShaderMaterial({vertexShader: borderVrtxShader, fragmentShader: borderFrgmShader, blending: THREE.AdditiveBlending, side: THREE.BackSide}));
+const borderMat = new THREE.ShaderMaterial({vertexShader: borderVrtxShader, fragmentShader: borderFrgmShader, blending: THREE.AdditiveBlending, side: THREE.BackSide})
+const sphereBorder = new THREE.Mesh(globeGeometry, borderMat);
 
 sphereBorder.scale.set(1.01, 1.01, 1.01);
 group.add(sphereBorder);
@@ -104,19 +103,19 @@ const stars = new THREE.Points(starGeometry, starMaterial)
 
 scene.add(stars)
 
-const sunMat = new THREE.MeshStandardMaterial({
-	emissive: new THREE.Color(0xffffff)
-
-});
-
 const sunGroup = new THREE.Group()
 
-const sunGeometry = new THREE.IcosahedronGeometry( 20, 50 );
+
+const sunGeometry = new THREE.IcosahedronGeometry( 50, 100 );
+const sunMat = new THREE.MeshStandardMaterial({
+	map: textureLoader.load('./Assets/sun.png')
+
+});
 const sunMesh = new THREE.Mesh(sunGeometry, sunMat)
 const sunlight = new THREE.PointLight(0xffffff, 1000000);
 	
 const sunAtmosphere = new THREE.Mesh( sunGeometry, atmMaterial );
-sunAtmosphere.scale.set(2, 2, 2);
+sunAtmosphere.scale.set(1.05, 1.05, 1.05);
 
 sunGroup.add(sunMesh);
 sunGroup.add(sunlight);
@@ -142,6 +141,9 @@ const lineGeo = new THREE.BufferGeometry().setFromPoints(linePoints);
 const curveMesh = new THREE.Points(lineGeo, lineMat);
 scene.add(curveMesh)
 
+
+const moonGroup = new THREE.Group()
+
 const moonMaterial = new THREE.MeshStandardMaterial({
 	map: textureLoader.load('./Assets/moon.jpg'),
 	emissiveIntensity: 0
@@ -149,12 +151,12 @@ const moonMaterial = new THREE.MeshStandardMaterial({
 const moonGeometry = new THREE.IcosahedronGeometry( 1, 50 );
 const moon = new THREE.Mesh( moonGeometry, moonMaterial);
 
-scene.add(moon)
+moonGroup.add(moon)
 
 let moonOrbit = new THREE.EllipseCurve(
 	0, 0,
 	20, 20,
-	0, 2 * Math.PI, false, 0.0890118
+	0, 2 * Math.PI, false, 50
 );
 
 const moonPoints = moonOrbit.getSpacedPoints(200)
@@ -164,14 +166,22 @@ for (let i = 0; i < moonPoints.length; i++) {
 	moonPoints[i].y = 0
 }
 
+const moonBorder = new THREE.Mesh(moonGeometry, borderMat)
+	
+moonBorder.scale.set(1.01, 1.01, 1.01);
+moonGroup.add(moonBorder);
+
+const moonAtmosphere = new THREE.Mesh( moonGeometry, atmMaterial );
+moonAtmosphere.scale.set(1.03, 1.03, 1.03);
+moonGroup.add(moonAtmosphere)
 
 const moonLineGeo = new THREE.BufferGeometry().setFromPoints(moonPoints);
 const moonLineMesh = new THREE.Points(moonLineGeo, lineMat);
-// group.add(moonLineMesh)
+//group.add(moonLineMesh)
 
 
 scene.add(group)
-
+scene.add(moonGroup)
 
 
 	
@@ -262,15 +272,15 @@ function animate() {
 	moonOrbit = new THREE.EllipseCurve(
 		group.position.x, group.position.z,
 		20, 20,
-		0, 2 * Math.PI, false, 0.0890118
+		0, 2 * Math.PI, false
 	);
 
 	t = getTime(moonOrbitSpeed, 1)
 
 	p = moonOrbit.getPoint(t)
 
-	moon.position.x = p.x
-	moon.position.z = p.y;
+	moonGroup.position.x = p.x;
+	moonGroup.position.z = p.y;
 
 	cameraLock();
 	controls.update();
