@@ -262,6 +262,9 @@ function updateContainerUI(type, objects) {
 	
 }
 
+
+//SELECTS
+
 var selects = []
 
 class Select {
@@ -370,6 +373,24 @@ function updateSelectValues(slct) {
 for (let i = 0; i < selects.length; i++) {
 	updateSelectValues(selects[i])
 }
+
+
+
+//ORDERS
+
+class MenuItem {
+	constructor(mnu) {
+		this.title = mnu.title;
+		this.price = mnu.price;
+		this.type = mnu.type;
+		this.cost = mnu.type;
+		this.selected = mnu.selected;
+
+	}
+}
+
+
+//MAIN LOOP
 
 function format(amount) {
 	let power = Math.floor(Math.log10(amount))
