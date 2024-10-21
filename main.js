@@ -8,7 +8,6 @@ import borderFrgmShader from './Shaders/borderFragment.glsl?raw'
 
 import atmVertexShader from './Shaders/atmVertex.glsl?raw'
 import atmFragmentShader from './Shaders/atmFragment.glsl?raw'
-import { mx_bilerp_0 } from 'three/src/nodes/materialx/lib/mx_noise.js';
 
 
 
@@ -115,7 +114,7 @@ const sunMesh = new THREE.Mesh(sunGeometry, sunMat)
 const sunlight = new THREE.PointLight(0xffffff, 1000000);
 	
 const sunAtmosphere = new THREE.Mesh( sunGeometry, atmMaterial );
-sunAtmosphere.scale.set(1.05, 1.05, 1.05);
+sunAtmosphere.scale.set(1.1, 1.1, 1.1);
 
 sunGroup.add(sunMesh);
 sunGroup.add(sunlight);
